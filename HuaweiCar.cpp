@@ -75,7 +75,7 @@ findCrossResult数组中的数据乱序，
 			findCrossResult[1] = Road[i][5];
 			return;
 		}
-	}
+	} y
 	findCrossResult[0] = -101;
 	findCrossResult[1] = -101;//unfind
 	//可直接通过Road[id-5000][4],Road[id-5000][5]或Road[id-5001][4],Road[id-5001][5]得到
