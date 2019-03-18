@@ -55,7 +55,7 @@ def beside_cross_of_cross(cross_id):
     :return: BesideCrossRusult 与路口相邻的路口
     """
     get_road_list_of_cross = find_road_of_cross(cross_id)
-
+    pass
 
 
 print(find_cross_of_road(5000))
