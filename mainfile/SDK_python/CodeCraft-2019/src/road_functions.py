@@ -58,5 +58,5 @@ def beside_cross_of_cross(cross_id):
     pass
 
 
-print(find_cross_of_road(5000))
-print(find_road_of_cross(2))
+# print(find_cross_of_road(5000))
+# print(find_road_of_cross(2))
