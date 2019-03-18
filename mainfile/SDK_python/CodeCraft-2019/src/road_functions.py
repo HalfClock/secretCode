@@ -26,24 +26,37 @@ def find_cross_of_road(road_id):
     return find_cross_result
 
 
-def beside_cross_of_cross(cross_id):
+def find_road_of_cross(cross_id):
     """
-    输入Cross的id，输出与该Cross相邻的1~4个Cross的id（数量不定）
-    结果存放于BesideCrossRusult数组中，数组内值即为Cross的id
+    输入1个Cross的id，输出与该Cross相连接的1至4个Road的id（数量不定）
+    结果存放于findRoadResult数组中
 
     不考虑单行的情况
     :param cross_id: 路口id
-    :return: BesideCrossRusult 与路口相邻的cross
+    :return: findRoadResult 与路口相邻的road
     """
-    beside_cross_result = []
+    find_road_result = []
     for cross_item in cross_list:
         if int(cross_item.cross_id) == cross_id:
             cross_roads = cross_item.road_list
             for cross_roads_item in cross_roads:
                 if int(cross_roads_item)!= -1:
-                    beside_cross_result.append(int(cross_roads_item))
-    return beside_cross_result
+                    find_road_result.append(int(cross_roads_item))
+    return find_road_result
+
+
+def beside_cross_of_cross(cross_id):
+    """
+    输入Cross的id，输出与该Cross相邻的1~4个Cross的id（数量不定）
+    结果存放于BesideCrossRusult数组中，数组内值即为Cross的id，
+
+    不考虑单行的情况
+    :param cross_id: 路口id
+    :return: BesideCrossRusult 与路口相邻的路口
+    """
+    get_road_list_of_cross = find_road_of_cross(cross_id)
+
 
 
 print(find_cross_of_road(5000))
-print(beside_cross_of_cross(2))
+print(find_road_of_cross(2))
