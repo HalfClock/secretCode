@@ -21,10 +21,10 @@ class RoadWay():
         self.isdual = is_dual #是否双向
 
     def __str__(self)->str:
-        return "This is the road numbered " + self.road_id
+        return "This is the road numbered " + str(self.road_id)
 
     def __repr__(self)->str:
-        return self.road_id
+        return str(self.road_id)
 
         
 #路口类
@@ -34,10 +34,10 @@ class CrossRoads():
         self.road_list = roadList #路口连接的道路
 
     def __str__(self)->str:
-        return "This is the crossroad numbered " + self.cross_id
+        return "This is the crossroad numbered " + str(self.cross_id)
 
     def __repr__(self) -> str:
-        return self.cross_id
+        return str(self.cross_id)
 
 
 #车类
@@ -50,10 +50,10 @@ class Car():
         self.start_time = startTime #出发时间
 
     def __str__(self)->str:
-        return "This id of this car is "+self.car_id
+        return "This id of this car is "+str(self.car_id)
 
     def __repr__(self)->str:
-        return self.car_id
+        return str(self.car_id)
 
 #地图类
 class rcMap():
@@ -80,10 +80,10 @@ class Answer():
         self.road_id_list = roadIdList #通过道路列表
 
     def __str__(self)->str:
-        return '''The car with id ''' + self.car_id + ''' passes the road of ''' + str([roadid for roadid in self.road_id_list]) + " to reach the end."
+        return '''The car with id ''' + str(self.car_id) + ''' passes the road of ''' + str([roadid for roadid in self.road_id_list]) + " to reach the end."
 
     def __repr__(self)->str:
-        return "This the answer of " + self.car_id +"car."
+        return "This the answer of " + str(self.car_id) +"car."
 
 
 
