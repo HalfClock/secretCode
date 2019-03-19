@@ -552,6 +552,7 @@ float prevww[maxnum];     // 记录当前点的前一个结点
 // dist[] -- the distance from the ith node to the source node
 // prev[] -- the previous node of the ith node
 // c[][] -- every two nodes' distance
+// 抄自https://www.cnblogs.com/simuhunluo/p/7469495.html
 void Dijkstra(int n, int v, float *dist, float *prev, float c[maxnum][maxnum])
 {
 	bool s[maxnum];    // 判断是否已存入该点到S集合中
