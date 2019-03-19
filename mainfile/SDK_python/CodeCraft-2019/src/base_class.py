@@ -184,12 +184,12 @@ include cross:
         for road_item in road_dict.keys():
             road_obj = road_dict[road_item]
             if cross_id1 == road_obj.orig_id and cross_id2 == road_obj.dest_id:
-                if str(road_obj.is_dual) == str(1):
+                if road_obj.is_dual:
                     return 1
                 else:
                     return 1
             elif cross_id1 == road_obj.dest_id and cross_id2 == road_obj.orig_id:
-                if str(road_obj.is_dual) == str(1):
+                if road_obj.is_dual:
                     return 1
                 else:
                     return 0
