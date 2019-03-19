@@ -81,12 +81,9 @@ include cross:
         :return: find_cross_result
         """
         find_cross_result = []
-        road_dict = self.road_dict
-        for road_item_id in road_dict.keys():
-            if road_item_id == str(road_id):
-                road_obj = self.road_dict[road_item_id]
-                find_cross_result.append(road_obj.orig_id)
-                find_cross_result.append(road_obj.dest_id)
+        road_obj = self.road_dict[road_id]
+        find_cross_result.append(road_obj.orig_id)
+        find_cross_result.append(road_obj.dest_id)
         return find_cross_result
 
     def find_road_of_cross(self, cross_id):
@@ -99,14 +96,11 @@ include cross:
         :return: findRoadResult 与路口相邻的road
         """
         find_road_result = []
-        cross_dict = self.cross_dict
-        for cross_item_id in cross_dict.keys():
-            if cross_item_id == str(cross_id):
-                cross_obj = cross_dict[cross_item_id]
-                road_list = cross_obj.road_list
-                for road_item in road_list:
-                    if str(road_item) != str(-1):
-                        find_road_result.append(road_item)
+        cross_obj = self.cross_dict[cross_id]
+        road_list = cross_obj.road_list
+        for road_item in road_list:
+            if str(road_item) != str(-1):
+                find_road_result.append(road_item)
         return find_road_result
 
 
