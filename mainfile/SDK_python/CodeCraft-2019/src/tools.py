@@ -39,10 +39,10 @@ class Tools():
                 roadId = road_item_list[0]
                 roadLen = int(road_item_list[1])
                 limitSpeed = int(road_item_list[2])
-                lane:int = int(road_item_list[3])
-                origId:str = road_item_list[4]
-                destId:str = road_item_list[5]
-                is_dual:bool = True if road_item_list[6] else False
+                lane = int(road_item_list[3])
+                origId = road_item_list[4]
+                destId = road_item_list[5]
+                is_dual = True if road_item_list[6] == "1" else False
                 temproad  = base_class.RoadWay(roadId, roadLen,limitSpeed,lane,origId,destId,is_dual)
                 roadlist.append(temproad)
 
@@ -90,11 +90,21 @@ class Tools():
                 carlist.append(tempcar)
         return carlist
 
+    # #将carlist写入文件
+    # def  write_car(self):
+
+
 
 
 t = Tools("../config/car.txt","../config/road.txt","../config/cross.txt","../config/answer.txt")
 
 #test
-# print(t.read_road())
+roadlist = t.read_road()
+print(roadlist)
+# print(roadlist[1])
+# print(roadlist[0].road_len)
+# print(roadlist[0].limit_speed)
 # print(t.read_cross())
 # print(t.read_car())
+
+
