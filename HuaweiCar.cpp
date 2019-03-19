@@ -17,28 +17,28 @@ int Road[RoadNum][8] =  //#(道路id，道路长度，最高限速，车道数�
 { 506, 10, 6, 5, 7, 8, 1 },
 { 507, 10, 6, 5, 9, 10, 1 },
 { 508, 10, 6, 5, 10, 11, 1 },
-{ 509, 10, 6, 5, 11, 12, 1 },
+{ 509, 6, 6, 5, 11, 12, 1 },
 { 510, 10, 6, 5, 13, 14, 1 },
 { 511, 10, 6, 5, 14, 15, 1 },
 { 512, 10, 6, 5, 15, 16, 1 },
 { 513, 10, 6, 5, 1, 5, 1 },
 { 514, 10, 6, 5, 2, 6, 1 },
-{ 515, 10, 6, 5, 3, 7, 1 },
+{ 515, 6, 6, 5, 3, 7, 1 },
 { 516, 10, 6, 5, 4, 8, 1 },
 { 517, 10, 6, 5, 5, 9, 1 },
 { 518, 10, 6, 5, 6, 10, 1 },
-{ 519, 10, 6, 5, 7, 11, 1 },
+{ 519, 6, 6, 5, 7, 11, 1 },
 { 520, 10, 6, 5, 8, 12, 1 },
 { 521, 10, 6, 5, 9, 13, 1 },
 { 522, 10, 6, 5, 10, 14, 1 },
-{ 523, 10, 6, 5, 11, 15, 1 },
+{ 523, 5, 6, 5, 11, 15, 1 },
 { 524, 10, 6, 5, 12, 16, 1 } };
 int Car[CarNum][6] =//#(id,始发地,目的地,最高速度,出发时间)
-{ {1001, 1, 16, 6, 1},
-{1002, 1, 16, 6, 1},
-{1003, 1, 16, 6, 1},
-{1004, 1, 16, 6, 1},
-{1005, 1, 16, 6, 1},
+{ {1001, 2, 15, 6, 1},
+{1002, 2, 16, 6, 1},
+{1003, 6, 16, 6, 1},
+{1004, 9, 16, 6, 1},
+{1005, 15, 16, 6, 1},
 {1006, 1, 16, 6, 1},
 {1007, 1, 16, 6, 1},
 {1008, 1, 16, 6, 1} };
@@ -60,6 +60,38 @@ int Cross[CrossNum][6] = //#(结点id,道路id,道路id,道路id,道路id)
 {15, 511, 523, 512, -1},
 {16, 512, 524, -1, -1}};
 
+int findCar(int Carid)
+/*输入Car的id，输出该id所在Car数组的行数，否则返回-108*/
+{
+	for (int i = 0; i < CarNum; i++)
+	{
+		if (Car[i][0] == Carid)
+			return i;
+	}
+	return -108;
+}
+int findCarFrom(int Carid)
+/*输入Car的id，输出该Car的出发点，否则返回-109*/
+{
+	for (int i = 0; i < CarNum; i++)
+	{
+		if (Car[i][0] == Carid)
+			return Car[i][1];
+	}
+	return -109;
+}
+int findCarEnd(int Carid)
+/*输入Car的id，输出该Car的终点，否则返回-110*/
+{
+	for (int i = 0; i < CarNum; i++)
+	{
+		if (Car[i][0] == Carid)
+			return Car[i][2];
+	}
+	return -109;
+}
+
+
 int findCrossResult[2];
 void findCross_of_Road(int Roadid)/*Input 1 road id ,Output 2 cross id*/
 /*输入1个Road的id，输出与该Road连接的2个Cross的id（必定是2个）
@@ -75,7 +107,7 @@ findCrossResult数组中的数据乱序，
 			findCrossResult[1] = Road[i][5];
 			return;
 		}
-	} y
+	}
 	findCrossResult[0] = -101;
 	findCrossResult[1] = -101;//unfind
 	//可直接通过Road[id-5000][4],Road[id-5000][5]或Road[id-5001][4],Road[id-5001][5]得到
@@ -302,32 +334,173 @@ void testifRoadAccess_WhenBeside()
 
 
 
-int main()
+
+int findRoad_of_2Cross(int Cross1, int Cross2)
+/*输入两个Cross的id，输出与这两个Cross都相连的Road，否则输出-105
+*/
 {
-    std::cout << "Hello ZHH!\n"; 
-//	testifRoadAccess_WhenBeside();
-	
+	for (int i =0;i<RoadNum;i++)
+	{
+		if (Road[i][4] == Cross1 && Road[i][5] == Cross2)
+		{
+			return Road[i][0];
+		}
+		else if (Road[i][5] == Cross1 && Road[i][4] == Cross2)
+		{
+			return Road[i][0];
+		}
+	}
+	return -105;//unfind
+}
+
+
+const int maxnum = 100;
+const int maxint = 999;
+float map[100][100];
+void InitMap()
+{
+	for (int i = 0; i < 100; i++)
+		for (int j = 0; j < 100; j++)
+			map[i][j] = maxint;//最大值
+}
+void buildMap(int Carid)
+{
+/*	for (int i = 0; i < CrossNum; i++)
+	{
+		for (int j = i + 1; j < CrossNum; j++)//遍历 j<=?
+		{
+			if (findRoad_of_2Cross(i, j) > 0)//两条路相连
+			{
+				cout << i << "和" << j << "相连" << endl;
+			}
+		}
+	}没必要*/
+	InitMap();
+	for (int i = 0; i < RoadNum; i++)
+	{
+		map[Road[i][4]][Road[i][5]] = Road[i][2] > Car[findCar(Carid)][3] ? (float)Road[i][1]/Car[findCar(Carid)][3] : (float)Road[i][1]/Road[i][2];
+		//赋值构造map，如果车速小于道路最高速度则为道速最高速
+		if (Road[i][6] == 1)//双向
+		{
+			map[Road[i][5]][Road[i][4]] = Road[i][2] > Car[findCar(Carid)][3] ? (float)Road[i][1] / Car[findCar(Carid)][3] : (float)Road[i][1] / Road[i][2];
+		}
+		//以上map为能达到的最大速度，相除后为时间	
+	}
+}
+void printMap()
+{
+	for (int i = 0; i < 100; i++)
+		for (int j = 0; j < 100; j++)
+			if (map[i][j] != maxint)
+				cout << "map[" << i << "][" << j << "]=" << map[i][j] << endl;
+}
+
+int alreadygo[10000];//记录已经去过的路口
+int alreadynum = 0;//记录已经去过的路口的数目
+int alreadyfind = 0;//记录是否已经到过终点
+void xunhuan(int Crossid,int endCross)
+{
+	alreadygo[alreadynum] = Crossid;
+	alreadynum++;
+	int findCResult[4];
+	BesideCross_of_Cross(Crossid);
+	memcpy(findCResult, BesideCrossRusult, sizeof(BesideCrossRusult));
+	for (int i=0;i<4;i++)
+	{
+		for (int j = 0; j < alreadynum; j++)
+		{
+			if (findCResult[i] == alreadygo[j])
+				findCResult[i] = -107;
+		}
+	}
+/*	cout << "Already有";
+	for (int i = 0; i < alreadynum + 10; i++)
+	{
+		cout << alreadygo[i]<<",";
+	}*/
+	/*
+	cout << "针对Cross" << Crossid << "的相邻的是";
+	for (int i : findCResult)
+	{
+		if(i > 0)
+			cout << i<<" ";
+	}
+	cout << "/"<<endl;*/
+
+	for (int i : findCResult)
+	{
+		if (i > 0)
+		{
+			cout << i << " ";
+			if (i == endCross)//到了终点
+			{
+
+				cout<<" -"<<findRoad_of_2Cross(i, Crossid)<<"- ";
+				//加入到走法
+				alreadyfind = 1;
+
+				return;
+			}
+			else if(alreadyfind==0)
+			{
+				xunhuan(i, endCross);
+				//cout << " +" << findRoad_of_2Cross(i, Crossid) << "+ ";
+			}
+		}
+	}
+}
+void findRoadend()
+/*清空关于already数组与相关值的数据*/
+{
+	for (int i = 0; i < alreadynum; i++)
+	{
+		alreadygo[i]=-104;
+	}
+	alreadynum = 0;
+	alreadyfind = 0;
+}
+int findRoad(int carid)
+/*
+输入车辆id，输出车辆id，出发时间，Road的id
+*/
+{
+	int startCross, endCross,carSpeed;
+	startCross = Car[carid - 1001][1];
+	endCross = Car[carid - 1001][2];
+	carSpeed = Car[carid - 1001][3];
+	cout << "car " << carid << " ,startC " << startCross << " Road" << endl;
+	xunhuan(startCross, endCross);
+	findRoadend();
+	cout << endl;
+	return 0;
+}
+//398行到462行没有用到
+
+
+void TestCase1()
+{
+
 	findCross_of_Road(506);
 	for (int i = 0; i < 2; i++)
 	{
-		cout<<findCrossResult[i]<<" ";
+		cout << findCrossResult[i] << " ";
 	}
 	cout << endl;
 
 	findRoad_of_Cross(6);
 	for (int j = 0; j < 4; j++)
 	{
-		cout << findRoadResult[j]<<" ";
+		cout << findRoadResult[j] << " ";
 	}
 	cout << endl;
 	cout << "ifCrossAccess" << endl;
 	cout << ifCrossAccess(6, 2) << " ";
 	cout << ifCrossAccess(6, 5) << " ";
-	cout << ifCrossAccess(6, 7)<<" ";
+	cout << ifCrossAccess(6, 7) << " ";
 	cout << ifCrossAccess(6, 10) << " ";
 	cout << ifCrossAccess(6, 12) << " ";
 	cout << ifCrossAccess(6, 15) << " ";
-	cout << ifCrossAccess(7,6) << " ";
+	cout << ifCrossAccess(7, 6) << " ";
 	cout << endl;
 
 	cout << endl;
@@ -364,5 +537,125 @@ int main()
 		cout << BesideRoadResult[j] << " ";
 	}
 	cout << endl;
+
 }
 
+
+
+
+// 各数组都从下标1开始
+float dist[maxnum];     // 表示当前点到源点的最短路径长度
+float prevww[maxnum];     // 记录当前点的前一个结点
+
+// n -- n nodes
+// v -- the source node
+// dist[] -- the distance from the ith node to the source node
+// prev[] -- the previous node of the ith node
+// c[][] -- every two nodes' distance
+void Dijkstra(int n, int v, float *dist, float *prev, float c[maxnum][maxnum])
+{
+	bool s[maxnum];    // 判断是否已存入该点到S集合中
+	for (int i = 1; i <= n; ++i)
+	{
+		dist[i] = c[v][i];
+		s[i] = 0;     // 初始都未用过该点
+		if (dist[i] == maxint)
+			prev[i] = 0;
+		else
+			prev[i] = (float)v;
+	}
+	dist[v] = 0;
+	s[v] = 1;
+
+	// 依次将未放入S集合的结点中，取dist[]最小值的结点，放入结合S中
+	// 一旦S包含了所有V中顶点，dist就记录了从源点到所有其他顶点之间的最短路径长度
+		 // 注意是从第二个节点开始，第一个为源点
+	for (int i = 2; i <= n; ++i)
+	{
+		float tmp = maxint;
+		int u = v;
+		// 找出当前未使用的点j的dist[j]最小值
+		for (int j = 1; j <= n; ++j)
+			if ((!s[j]) && dist[j] < tmp)
+			{
+				u = j;              // u保存当前邻接点中距离最小的点的号码
+				tmp = dist[j];
+			}
+		s[u] = 1;    // 表示u点已存入S集合中
+
+		// 更新dist
+		for (int j = 1; j <= n; ++j)
+			if ((!s[j]) && c[u][j] < maxint)
+			{
+				float newdist = dist[u] + c[u][j];
+				if (newdist < dist[j])
+				{
+					dist[j] = newdist;
+					prev[j] = (float) u;
+				}
+			}
+	}
+}
+
+// 查找从源点v到终点u的路径，并输出
+void searchPath(float *prev, int v, int u)
+{
+	int que[maxnum];
+	int tot = 1;
+	que[tot] = u;
+	tot++;
+	int tmp = prev[u];
+	while (tmp != v)
+	{
+		que[tot] = tmp;
+		tot++;
+		tmp = prev[tmp];
+	}
+	que[tot] = v;
+	for (int i = tot; i >= 1; --i)
+		if (i != 1)
+			cout << que[i] << " -> ";
+		else
+			cout << que[i] << endl;
+}
+void clearPrevAndDist()
+{
+	for (int i = 0; i < maxnum; i++)
+	{
+		dist[i]=0.0;
+		prevww[i]=0.0;     // 记录当前点的前一个结点
+
+	}
+}
+void BuildMapandFindRoadForCar(int Carid)
+{
+	//为1001车build地图
+	buildMap(Carid);
+	//printMap();
+	for (int i = 1; i <= CrossNum; ++i)
+		dist[i] = maxint;
+
+	Dijkstra(CrossNum, findCarFrom(Carid), dist, prevww, map);
+	cout << "车辆" << Carid << "最短时间: " << dist[findCarEnd(Carid)] << endl;
+	cout << findCarFrom(Carid)<<"到"<< findCarEnd(Carid)<<"的路径为: ";
+	searchPath(prevww, findCarFrom(Carid), findCarEnd(Carid));
+
+
+}
+
+int main()
+{
+	std::cout << "Hello ZHH!\n";
+	BuildMapandFindRoadForCar(1001);
+	BuildMapandFindRoadForCar(1002);
+	BuildMapandFindRoadForCar(1003);
+	BuildMapandFindRoadForCar(1004);
+	BuildMapandFindRoadForCar(1005);
+
+	//	testifRoadAccess_WhenBeside();
+/*	findRoad(1001);
+	findRoad(1002);
+	findRoad(1003);
+	findRoad(1004);
+	findRoad(1005);*/
+}
