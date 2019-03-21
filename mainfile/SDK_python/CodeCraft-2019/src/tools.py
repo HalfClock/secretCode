@@ -25,49 +25,49 @@ class Tools(object):
     # 将road文件内容读入，并转换成对象列表
     def read_road(self):
 
-        roadlist = []
+        road_list = []
 
         with open(self.road_path, 'r') as f:
             road_str_list = f.readlines()
 
         if road_str_list:
             # 去除换行符
-            road_str_list = [roadstr.rstrip('\n') for roadstr in road_str_list]
+            road_str_list = [road_str.rstrip('\n') for road_str in road_str_list]
             # 逐个字符串处理
             for item in road_str_list[1:]:  # 第一个是注释不录入
                 road_item_list = item[1:-1].replace(" ", "").split(',')  # 去除()和“ ”，以，分割
-                roadId = road_item_list[0]
-                roadLen = int(road_item_list[1])
-                limitSpeed = int(road_item_list[2])
+                road_id = road_item_list[0]
+                road_len = int(road_item_list[1])
+                limit_speed = int(road_item_list[2])
                 lane = int(road_item_list[3])
-                origId = road_item_list[4]
-                destId = road_item_list[5]
+                orig_id = road_item_list[4]
+                dest_id = road_item_list[5]
                 is_dual = True if road_item_list[6] == "1" else False
-                temproad  = base_class.RoadWay(roadId, roadLen,limitSpeed,lane,origId,destId,is_dual)
-                roadlist.append(temproad)
-        return roadlist
+                temp_road = base_class.RoadWay(road_id, road_len, limit_speed, lane, orig_id, dest_id, is_dual)
+                road_list.append(temp_road)
+        return road_list
 
     # 将cross文件内容读入，并转换成对象列表
     def read_cross(self):
 
-        crosslist = []
+        cross_list = []
 
         with open(self.cross_path, 'r') as f:
             cross_str_list = f.readlines()
 
         if cross_str_list:
             # 去除换行符
-            cross_str_list = [crossstr.rstrip('\n') for crossstr in cross_str_list]
+            cross_str_list = [cross_str.rstrip('\n') for cross_str in cross_str_list]
             # 逐个字符串处理
             for item in cross_str_list[1:]:  # 第一个是注释不录入
                 cross_item_list = item[1:-1].replace(" ", "").split(',')  # 去除()和“ ”，以，分割
-                tempcross = base_class.CrossRoads(cross_item_list[0], cross_item_list[1:])
-                crosslist.append(tempcross)
-        return crosslist
+                temp_cross = base_class.CrossRoads(cross_item_list[0], cross_item_list[1:])
+                cross_list.append(temp_cross)
+        return cross_list
 
     # 将car文件内容读入，并转换成对象列表
     def read_car(self):
-        carlist = []
+        car_list = []
 
         with open(self.car_path, 'r') as f:
             car_str_list = f.readlines()
@@ -78,18 +78,17 @@ class Tools(object):
             # 逐个字符串处理
             for item in car_str_list[1:]:  # 第一个是注释不录入
                 car_item_list = item[1:-1].replace(" ", "").split(',')  # 去除()和“ ”，以，分割
-                carId = car_item_list[0]
-                destCross = car_item_list[1]
-                origCross = car_item_list[2]
-                limitSpeed = int(car_item_list[3])
-                startTime = int(car_item_list[4])
-                tempcar = base_class.Car(carId, destCross, origCross, limitSpeed, startTime)
-                carlist.append(tempcar)
-        return carlist
+                car_id = car_item_list[0]
+                dest_cross = car_item_list[1]
+                orig_cross = car_item_list[2]
+                limit_speed = int(car_item_list[3])
+                start_time = int(car_item_list[4])
+                temp_car = base_class.Car(car_id, dest_cross, orig_cross, limit_speed, start_time)
+                car_list.append(temp_car)
+        return car_list
 
-    # #将carlist写入文件
+    # 将carlist写入文件
     # def  write_car(self):
-
 
 
 t = Tools("../config/car.txt", "../config/road.txt", "../config/cross.txt", "../config/answer.txt")
@@ -98,11 +97,19 @@ t = Tools("../config/car.txt", "../config/road.txt", "../config/cross.txt", "../
 # t = Tools("../config/car.txt","../config/road.txt","../config/cross.txt","../config/answer.txt")
 
 #test
-roadlist = t.read_road()
-print(roadlist)
-# print(roadlist[1])
-# print(roadlist[0].road_len)
-# print(roadlist[0].limit_speed)
-# print(t.read_cross())
-# print(t.read_car())
+# roadlist = t.read_road()
+# print(roadlist)
+# # print(roadlist[1])
+# # print(roadlist[0].road_len)
+# # print(roadlist[0].limit_speed)
+# # print(t.read_cross())
+# # print(t.read_car())
 
+roads = t.read_road()
+crosses = t.read_cross()
+res = base_class.RoadCrossMap(roads, crosses)
+roads_list = res.find_road_of_cross("2")
+print(roads_list)
+
+crosses_list = res.find_cross_of_road("5001")
+print(crosses_list)
