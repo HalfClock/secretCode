@@ -95,7 +95,7 @@ class Tools(object):
 t = Tools("../config/car.txt", "../config/road.txt", "../config/cross.txt", "../config/answer.txt")
 
 
-t = Tools("../config/car.txt","../config/road.txt","../config/cross.txt","../config/answer.txt")
+# t = Tools("../config/car.txt","../config/road.txt","../config/cross.txt","../config/answer.txt")
 
 #test
 roadlist = t.read_road()
