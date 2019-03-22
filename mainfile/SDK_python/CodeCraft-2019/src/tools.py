@@ -87,29 +87,43 @@ class Tools(object):
                 car_list.append(temp_car)
         return car_list
 
-    # 将carlist写入文件
-    # def  write_car(self):
+    #将answerlist写入文件
+    def  write_answer(self,answerlist:list):
+        '''
+        本函数需要按answerlist列表中的对象顺序依次写入路径为：answer_path(本类对象的属性：str)的文件。
+        :param answerlist: 是一个answer对象列表
+        :return: 返回是否写入成功
+        '''
+        pass
 
 
-t = Tools("../config/car.txt", "../config/road.txt", "../config/cross.txt", "../config/answer.txt")
+# t = Tools("../config_3/car.txt", "../config_3/road.txt", "../config_3/cross.txt", "../config_3/answer.txt")
 
 
-# t = Tools("../config/car.txt","../config/road.txt","../config/cross.txt","../config/answer.txt")
 
-#test
-# roadlist = t.read_road()
-# print(roadlist)
-# # print(roadlist[1])
-# # print(roadlist[0].road_len)
-# # print(roadlist[0].limit_speed)
-# # print(t.read_cross())
-# # print(t.read_car())
+for i in range(1,11):
 
-roads = t.read_road()
-crosses = t.read_cross()
-res = base_class.RoadCrossMap(roads, crosses)
-roads_list = res.find_road_of_cross("2")
-print(roads_list)
+    t = Tools("../config_"+str(i)+"/car.txt","../config_"+str(i)+"/road.txt","../config_"+str(i)+"/cross.txt","../config_"+str(i)+"/answer.txt")
 
-crosses_list = res.find_cross_of_road("5001")
-print(crosses_list)
+    #test
+    roadlist = t.read_road()
+    crosses = t.read_cross()
+
+    print("---------")
+    print(len(roadlist))
+    print(len(crosses))
+    print("---------")
+# print(roadlist[1])
+# print(roadlist[0].road_len)
+# print(roadlist[0].limit_speed)
+# print(t.read_cross())
+# print(t.read_car())
+
+# roads = t.read_road()
+# crosses = t.read_cross()
+# res = base_class.RoadCrossMap(roads, crosses)
+# roads_list = res.find_road_of_cross("2")
+# print(roads_list)
+#
+# crosses_list = res.find_cross_of_road("5001")
+# print(crosses_list)
