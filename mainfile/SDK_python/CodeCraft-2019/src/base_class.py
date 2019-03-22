@@ -61,7 +61,7 @@ class Car(object):
 
 # 地图类
 class RoadCrossMap(object):
-    def __init__(self, road_list: list = None, cross_list: list = None):
+    def __init__(self, road_list: list = None, cross_list: list = None,car_speed_list:list = None):
         # 将列表转换成字典对象，该字典对象，key是id，值是对对应的对象，方便后面查找
         self.road_dict = {road.road_id: road for road in road_list}  # 道路字典，key是id，值是id对应的道路对象
         self.cross_dict = {cross.cross_id: cross for cross in cross_list}  # 路口字典，key是id，值是id对应的路口对象
