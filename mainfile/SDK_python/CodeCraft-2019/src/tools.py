@@ -101,8 +101,9 @@ class Tools(object):
     # 将answer_list写入文件
     def write_answer(self, answer_list: list):
         """
-        本函数需要按answerlist列表中的对象顺序依次写入路径为：answer_path(本类对象的属性：str)的文件。
-        :param answerlist: 是一个answer对象列表
+        本函数需要按answer_list列表中的对象顺序依次写入路径为：
+        answer_path(本类对象的属性：str)的文件。
+        :param answer_list: 是一个answer对象列表
         :return: 返回是否写入成功
         """
         pass
