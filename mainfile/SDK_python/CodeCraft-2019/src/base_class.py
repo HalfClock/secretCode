@@ -65,6 +65,8 @@ class RoadCrossMap(object):
         # 将列表转换成字典对象，该字典对象，key是id，值是对对应的对象，方便后面查找
         self.road_dict = {road.road_id: road for road in road_list}  # 道路字典，key是id，值是id对应的道路对象
         self.cross_dict = {cross.cross_id: cross for cross in cross_list}  # 路口字典，key是id，值是id对应的路口对象
+        self.map_dict = self.init_map_of_diff_speed(car_speed_list) #根据不同车的速度生成的地图索引
+
 
     def __repr__(self) -> str:
         return '''This map contains all the roads and junctions,
@@ -207,6 +209,18 @@ include cross:
                 if cross_item1 != cross_item2:
                     pass
         pass
+
+
+    def init_map_of_diff_speed(self,car_speed_list):
+        """
+
+        :param car_speed_list: 这个列表里有各种车速
+        :return:一个字典，这个字典的key是车速（int），value是对应速度生成的map,这个map是一个二维列表
+        """
+
+        return {}
+
+
 
 
 # 答案类
