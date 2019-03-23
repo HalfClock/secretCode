@@ -94,6 +94,7 @@ class Tools(object):
         :param answerlist: 是一个answer对象列表
         :return: 返回是否写入成功
         '''
+
         pass
 
 
