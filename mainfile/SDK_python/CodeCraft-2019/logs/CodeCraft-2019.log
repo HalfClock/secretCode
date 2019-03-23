@@ -1,0 +1,5 @@
+[2019-03-23 21:11:07] INFO [main: CodeCraft-2019.py, 25] car_path is ../1-map-training-1/car.txt
+[2019-03-23 21:11:07] INFO [main: CodeCraft-2019.py, 26] road_path is ../1-map-training-1/road.txt
+[2019-03-23 21:11:07] INFO [main: CodeCraft-2019.py, 27] cross_path is ../1-map-training-1/cross.txt
+[2019-03-23 21:11:07] INFO [main: CodeCraft-2019.py, 28] answer_path is ../1-map-training-1/answer.txt
+[2019-03-23 21:11:09] INFO [main: CodeCraft-2019.py, 75] Running time: 1.5443880558013916 Seconds
