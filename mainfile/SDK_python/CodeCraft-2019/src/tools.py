@@ -148,8 +148,5 @@ t = Tools("../config/car.txt",
 answer1 = base_class.Answer("1", 1, ["502"])
 answer2 = base_class.Answer("2", 2, ["503", "504", "505"])
 answer3 = base_class.Answer("3", 3, ["501", "502"])
-answers_list = []
-answers_list.append(answer1)
-answers_list.append(answer2)
-answers_list.append(answer3)
+answers_list = [answer1, answer2, answer3]
 t.write_answer(answers_list)
