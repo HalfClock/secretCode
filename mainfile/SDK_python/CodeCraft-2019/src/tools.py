@@ -145,7 +145,7 @@ t = Tools("../config/car.txt",
 # speed_dict = rcm.init_map_of_diff_speed(s)
 # print(speed_dict)
 
-answer1 = base_class.Answer("1", 1, ["502"])
+answer1 = base_class.Answer("1", 1, ["502", "506"])
 answer2 = base_class.Answer("2", 2, ["503", "504", "505"])
 answer3 = base_class.Answer("3", 3, ["501", "502"])
 answers_list = [answer1, answer2, answer3]
