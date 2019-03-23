@@ -2,6 +2,9 @@
     工具类模块：
         输入文件转换成对应的数据结构、如将car.txt转换成car对象列表
 """
+import time
+from collections import defaultdict
+from heapq import heappop, heappush
 
 import base_class
 
@@ -79,24 +82,159 @@ class Tools(object):
             for item in car_str_list[1:]:  # 第一个是注释不录入
                 car_item_list = item[1:-1].replace(" ", "").split(',')  # 去除()和“ ”，以，分割
                 car_id = car_item_list[0]
-                dest_cross = car_item_list[1]
-                orig_cross = car_item_list[2]
+                orig_cross = car_item_list[1]
+                dest_cross = car_item_list[2]
                 limit_speed = int(car_item_list[3])
                 start_time = int(car_item_list[4])
-                temp_car = base_class.Car(car_id, dest_cross, orig_cross, limit_speed, start_time)
+                temp_car = base_class.Car(car_id, orig_cross,dest_cross,limit_speed, start_time)
                 car_list.append(temp_car)
         return car_list
 
+
     # 获取所有的车速列表
-    def get_car_speed_list(self):
+    #没必要,可以直接用get_diff_speed_car_list返回的dict获取speedlist
+    '''
+    def get_car_speed_list(self,car_list):
         """
         :return: 所有车速
         """
-        car_list = self.read_car()
         car_speed_list = set()
         for car in car_list:
             car_speed_list.add(car.limit_speed)
         return list(car_speed_list)
+    '''
+
+    #输入所有车辆列表、返回按车速不同分类的车辆的列表
+    def get_diff_speed_car_dict(self,car_list):
+        """
+        :return diff_speed_car_dict:
+        """
+        diff_speed_car_dict = defaultdict(list)
+        for car in car_list:
+            diff_speed_car_dict[car.limit_speed].append(car)
+
+        return diff_speed_car_dict
+
+    #将一个列表里的车按照不同的源路口分类
+    def classify_of_diff_ori_car(self,car_list):
+        """
+
+        :param carlist:
+        :return:list[list]  第二维的每一个list
+        :return:diff_ori_car_dict  第二维的每一个list的车源路口都不同
+        """
+
+        diff_ori_car_dict = defaultdict(list)
+
+        for car in car_list:
+            diff_ori_car_dict[car.orig_cross].append(car)
+
+        return diff_ori_car_dict
+
+
+    #dijkstra算法，获取单源点到多终点的最短路，并返回最短路字典
+    def dijkstra_raw(self,edges, from_node, to_node_list):
+        """
+
+        :param edges: 边集 ——（路头，路尾，权值）
+        :param from_node:源点
+        :param to_node_list:终点
+        :return: shortest_path_dict:最短路的字典 {key = to_node : value = (cost,path)}
+        """
+
+        shortest_path_dict = {}
+
+        g = defaultdict(list)  # 定义一个空字典、此字典若没找到key，则返回空列表[]
+        for l, r, c in edges:  # l:源点、r:终点 c:距离
+            g[l].append((c, r))  # 建立一个字典，元素是源点为key、（距离，终点）为value
+
+        q, seen = [(0, from_node, ())], set()  # 初始化优先队列、初始化已找到的最短路径集合——————元组（源点到点A的距离，某个点A，源点到点A的路径）
+        while q:  # 优先队列为空时，循环结束
+            (cost, v1, path) = heappop(q)  # 从优先队列中找出与源点距离最小的点
+            if v1 not in seen:  # 若点v1以确定最短路径则无需计算
+                seen.add(v1)
+                path = (v1, path)
+                if v1 in to_node_list:  # 如果找到了某一个终点
+                    shortest_path_dict[v1] = (cost, path)
+                if len(shortest_path_dict) == len(to_node_list):  # 如果所有的tonode都找到了
+                    return shortest_path_dict
+                for c, v2 in g.get(v1, ()):  # 更新优先队列，加入与当前点相连的所有点的信息
+                    if v2 not in seen:
+                        heappush(q, (cost + c, v2, path))
+
+        return {"ERROR": (float("inf"), [])}
+
+
+    #解析最短路元组
+    def tranfer_exp(self,length, path_queue):
+        len_shortest_path = -1
+        ret_path = []
+        if len(path_queue) > 0:
+            len_shortest_path = length  ## 1. 拿到最短路;
+            ## 2. 逐步从元组里拿到最短路径
+            left = path_queue[0]
+            ret_path.append(left)  ## 2.1 记录终点
+            right = path_queue[1]
+            while len(right) > 0:
+                left = right[0]
+                ret_path.append(left)  ## 2.2 记录其他的点
+                right = right[1]
+            ret_path.reverse()  ## 3. 让输出的path为正向
+
+        return len_shortest_path, ret_path
+
+
+    #给定速度的边集，和该速度的所有车辆对象，返回答案列表
+
+    def dijkstra(self,edges, same_speed_car_list,rcmap):
+        """
+
+        :param edges: 该速度的地图边集 ——（路头，路尾，权值）
+        :param same_speed_car_list: 一个Car类型对象的list、他们的车速都相同
+        :param 传入一个地图对象用作生成roadlist
+        :return: answer_list:答案对象列表、列表里是same_speed_car_list里每一辆车的最短路径答案
+        """
+
+        #初始化答案对象列表
+        answer_list = []
+
+        #将same_speed_car_list以不同的源路口进行分类
+        diff_ori_car_dict = self.classify_of_diff_ori_car(same_speed_car_list)
+
+        #针对不同源路口的车调用dijkstra算法
+        for from_node,car_list in diff_ori_car_dict.items():
+
+            #初始化终点集
+            to_node_set = set()
+
+            #对于相同的源ori_id提取不同的终点列表
+            for car in car_list:
+                to_node_set.add(car.dest_cross)
+            to_node_list = list(to_node_set)
+
+            #利用dijkstra_raw返回最短路的字典，{key = to_node : value = path}
+            shortest_path_dict = self.dijkstra_raw(edges,from_node,to_node_list)
+
+            #针对每一个终点生成最短路径列表
+            for to_node,shortest_path in shortest_path_dict.items():
+
+                #不获取最短路，只拿到最短路的列表
+                path_list = self.tranfer_exp(shortest_path[0],shortest_path[1])[1]
+
+
+                #针对相同源id的车,如果目的地相同，那么就可以生成答案了
+                for car in car_list:
+                    if eval(car.dest_cross) == eval(to_node):
+                        car_id = car.car_id #答案对象的car_id
+                        start_time = car.start_time #答案对象的start_time
+                        road_id_list = rcmap.transfer_cross_to_road(path_list) #答案对象的path_list
+                        # road_id_list = path_list
+                        answer = base_class.Answer(car_id,start_time,road_id_list)
+                        answer_list.append(answer)
+
+        return answer_list
+
+
 
     # 将answer_list写入文件
     def write_answer(self, answer_list: list):
@@ -113,7 +251,8 @@ class Tools(object):
                 f.write(str(answer) + "\n")
 
 
-# test
+# ---------------------------------------- test ----------------------------------------
+
 # t = Tools("../config_3/car.txt", "../config_3/road.txt", "../config_3/cross.txt", "../config_3/answer.txt")
 
 
@@ -130,10 +269,10 @@ class Tools(object):
 #     print(len(crosses))
 #     print("---------")
 
-t = Tools("../config/car.txt",
-          "../config/road.txt",
-          "../config/cross.txt",
-          "../config/answer.txt")
+# t = Tools("../config/car.txt",
+#           "../config/road.txt",
+#           "../config/cross.txt",
+#           "../config/answer.txt")
 
 # r = t.read_road()
 # c = t.read_cross()
@@ -145,8 +284,61 @@ t = Tools("../config/car.txt",
 # speed_dict = rcm.init_map_of_diff_speed(s)
 # print(speed_dict)
 
+"""
+# ---------------------------------------- answer test ----------------------------------------
 answer1 = base_class.Answer("1", 1, ["502", "506"])
 answer2 = base_class.Answer("2", 2, ["503", "504", "505"])
 answer3 = base_class.Answer("3", 3, ["501", "502"])
 answers_list = [answer1, answer2, answer3]
 t.write_answer(answers_list)
+
+"""
+
+#
+# start = time.time()
+#
+# tool = Tools("../config/car.txt",
+#           "../config/road.txt",
+#           "../config/cross.txt",
+#           "../config/answer.txt")
+#
+#
+# #读各种数据
+# road_list = tool.read_road()
+# cross_list = tool.read_cross()
+# carlist = tool.read_car()
+#
+# #获取不同速度车的字典
+# diff_speed_car_dict = tool.get_diff_speed_car_dict(carlist)
+#
+# #获取速度列表
+# diff_speed_list = list(diff_speed_car_dict.keys())
+#
+# #新建一个地图类
+# rcMap_test = base_class.RoadCrossMap(road_list, cross_list, diff_speed_list)
+#
+# #获取不同速度的地图
+# speed_dict = rcMap_test.init_map_of_diff_speed(diff_speed_list)
+#
+# all_answer_list = []
+#
+# #对于每一种速度生成的地图而言
+# for speed,edges in speed_dict.items():
+#
+#     #获取相同速度车字典
+#     same_speed_car_list = diff_speed_car_dict[speed]
+#
+#     #针对相同速度的车生成答案列表
+#     answerlist = tool.dijkstra(edges, same_speed_car_list,rcMap_test)
+#
+#     #增加到所有的文件列表后
+#     all_answer_list += answerlist
+#
+# print(all_answer_list)
+#
+# tool.write_answer(all_answer_list)
+#
+# end = time.time()
+#
+# print('Running time: %s Seconds'%(end-start))
+
