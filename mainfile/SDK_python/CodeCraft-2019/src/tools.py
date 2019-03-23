@@ -108,9 +108,9 @@ class Tools(object):
 
         """
         answer_path = self.answer_path
-        with open(answer_path, 'wb', encoding="utf-8") as f:
+        with open(answer_path, 'w', encoding="utf-8") as f:
             for answer in answer_list:
-                f.write(answer + "\n")
+                f.write(str(answer) + "\n")
 
 
 # test
@@ -135,12 +135,21 @@ t = Tools("../config/car.txt",
           "../config/cross.txt",
           "../config/answer.txt")
 
-r = t.read_road()
-c = t.read_cross()
-s = t.get_car_speed_list()
-# print(r)
-# print(c)
-# print(s)
-rcm = base_class.RoadCrossMap(r, c, s)
-speed_dict = rcm.init_map_of_diff_speed(s)
-print(speed_dict)
+# r = t.read_road()
+# c = t.read_cross()
+# s = t.get_car_speed_list()
+# # print(r)
+# # print(c)
+# # print(s)
+# rcm = base_class.RoadCrossMap(r, c, s)
+# speed_dict = rcm.init_map_of_diff_speed(s)
+# print(speed_dict)
+
+answer1 = base_class.Answer("1", 1, ["502"])
+answer2 = base_class.Answer("2", 2, ["503", "504", "505"])
+answer3 = base_class.Answer("3", 3, ["501", "502"])
+answers_list = []
+answers_list.append(answer1)
+answers_list.append(answer2)
+answers_list.append(answer3)
+t.write_answer(answers_list)
