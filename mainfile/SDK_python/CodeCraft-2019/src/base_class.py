@@ -189,24 +189,24 @@ include cross:
                     return 0
         return -1
 
-    def is_road_access(self, road_id1: str, road_id2: str) -> int:
-        """
-            Input 2 Road id , Output ture/false 判断两个Road是否相邻，如果是单行则需要进一步判断
-            输入两个Road的id(有先后顺序)，判断Road1和Road是否相邻(或可从Road1通过到Road2)
-            输出为1说明相邻（即Road1和Road2连接同一个Cross）；
-            输出为0则说明Road1和Road2连接同一个Cross，但Road1和Road2中存在有路是单行导致从Road1一端到该Cross再到Road2另一端不能通过；
-            输出为-1说明Road1和Road2没有连接同一个Cross
-
-            :param: Road_id1:str 路口1的id, Road_id2 :str 路口2的id
-            :return: 1 / 0 / -1
-        """
-        related_cross_of_road1 = self.find_cross_of_road(road_id1)
-        related_cross_of_road2 = self.find_cross_of_road(road_id2)
-        for cross_item1 in related_cross_of_road1:
-            for cross_item2 in related_cross_of_road2:
-                if cross_item1 != cross_item2:
-                    pass
-        pass
+    # def is_road_access(self, road_id1: str, road_id2: str) -> int:
+    #     """
+    #         Input 2 Road id , Output ture/false 判断两个Road是否相邻，如果是单行则需要进一步判断
+    #         输入两个Road的id(有先后顺序)，判断Road1和Road是否相邻(或可从Road1通过到Road2)
+    #         输出为1说明相邻（即Road1和Road2连接同一个Cross）；
+    #         输出为0则说明Road1和Road2连接同一个Cross，但Road1和Road2中存在有路是单行导致从Road1一端到该Cross再到Road2另一端不能通过；
+    #         输出为-1说明Road1和Road2没有连接同一个Cross
+    #
+    #         :param: Road_id1:str 路口1的id, Road_id2 :str 路口2的id
+    #         :return: 1 / 0 / -1
+    #     """
+    #     related_cross_of_road1 = self.find_cross_of_road(road_id1)
+    #     related_cross_of_road2 = self.find_cross_of_road(road_id2)
+    #     for cross_item1 in related_cross_of_road1:
+    #         for cross_item2 in related_cross_of_road2:
+    #             if cross_item1 != cross_item2:
+    #                 pass
+    #     pass
 
     def init_map_of_diff_speed(self, car_speed_list):
         """
@@ -218,34 +218,33 @@ include cross:
 
         """
 
-        road_dict = self.road_dict #拿到路字典
-        speed_dict = {} #初始化结果字典
+        road_dict = self.road_dict  # 拿到路字典
+        speed_dict = {}  # 初始化结果字典
 
-        for car_speed in car_speed_list: #对于每一种车速进行遍历
+        for car_speed in car_speed_list:  # 对于每一种车速进行遍历
 
-            for road in road_dict: #对于每一种测速遍历每一条路
+            for road in road_dict:  # 对于每一种测速遍历每一条路
                 road_limit_speed = road_dict[road].limit_speed
-                final_speed = min(road_limit_speed, car_speed) #拿到本车速的理论最高速
+                final_speed = min(road_limit_speed, car_speed)  # 拿到本车速的理论最高速
 
-                if car_speed not in speed_dict:#差错控制
+                if car_speed not in speed_dict:  # 差错控制
                     speed_dict[car_speed] = []
 
-                if road_dict[road].is_dual:#如果路是双向
+                if road_dict[road].is_dual:  # 如果路是双向
 
                     speed_dict[car_speed].append((road_dict[road].orig_id,
-                                                    road_dict[road].dest_id,
-                                                    road_dict[road].road_len // final_speed))
+                                                  road_dict[road].dest_id,
+                                                  road_dict[road].road_len // final_speed))
                     speed_dict[car_speed].append((road_dict[road].dest_id,
-                                                    road_dict[road].orig_id,
-                                                    road_dict[road].road_len // final_speed))
-                else:#如果路是单向
+                                                  road_dict[road].orig_id,
+                                                  road_dict[road].road_len // final_speed))
+                else:  # 如果路是单向
 
                     speed_dict[car_speed].append((road_dict[road].orig_id,
-                                                    road_dict[road].dest_id,
-                                                    road_dict[road].road_len // final_speed))
+                                                  road_dict[road].dest_id,
+                                                  road_dict[road].road_len // final_speed))
 
         return speed_dict
-
 
 
 # 答案类

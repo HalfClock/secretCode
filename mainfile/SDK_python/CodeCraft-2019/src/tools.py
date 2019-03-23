@@ -92,13 +92,6 @@ class Tools(object):
         """
         :return: 所有车速
         """
-        # car_list = self.read_car()
-        # car_speed_list = []
-        # for car in car_list:
-        #     car_speed_list.append(car.limit_speed)
-        # return list(set(car_speed_list))
-
-        #修改版
         car_list = self.read_car()
         car_speed_list = set()
         for car in car_list:
@@ -114,12 +107,13 @@ class Tools(object):
         :return: 返回是否写入成功
 
         """
-        pass
+        answer_path = self.answer_path
+        with open(answer_path, 'wb', encoding="utf-8") as f:
+            for answer in answer_list:
+                f.write(answer + "\n")
 
 
-
-
-#test
+# test
 # t = Tools("../config_3/car.txt", "../config_3/road.txt", "../config_3/cross.txt", "../config_3/answer.txt")
 
 
