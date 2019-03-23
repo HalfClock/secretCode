@@ -31,7 +31,7 @@ class RoadWay(object):
 
 # 路口类
 class CrossRoads(object):
-    def __init__(self, cross_id: str = None, road_list: list = [None, None, None, None]):
+    def __init__(self, cross_id: str = None, road_list: list = None):
         self.cross_id = cross_id  # 节点id
         self.road_list = road_list  # 路口连接的道路
 
@@ -61,12 +61,11 @@ class Car(object):
 
 # 地图类
 class RoadCrossMap(object):
-    def __init__(self, road_list: list = None, cross_list: list = None,car_speed_list:list = None):
+    def __init__(self, road_list: list = None, cross_list: list = None, car_speed_list: list = None):
         # 将列表转换成字典对象，该字典对象，key是id，值是对对应的对象，方便后面查找
         self.road_dict = {road.road_id: road for road in road_list}  # 道路字典，key是id，值是id对应的道路对象
         self.cross_dict = {cross.cross_id: cross for cross in cross_list}  # 路口字典，key是id，值是id对应的路口对象
-        self.map_dict = self.init_map_of_diff_speed(car_speed_list) #根据不同车的速度生成的地图索引
-
+        self.map_dict = self.init_map_of_diff_speed(car_speed_list)  # 根据不同车的速度生成的地图索引
 
     def __repr__(self) -> str:
         return '''This map contains all the roads and junctions,
@@ -104,7 +103,6 @@ include cross:
             if str(road_item) != str(-1):
                 find_road_result.append(road_item)
         return find_road_result
-
 
     """
         以下函数以本类的属性作为基础编写！！！！！
@@ -210,21 +208,43 @@ include cross:
                     pass
         pass
 
-
-    def init_map_of_diff_speed(self,car_speed_list):
+    def init_map_of_diff_speed(self, car_speed_list):
         """
-
         :param car_speed_list: 这个列表里有各种车速
-        :return:一个字典，这个字典的key是车速（int），value是对应速度生成的edges,这个edges是一个列表，元素是一个元组（源路口id，目的路口id，权值）
-
+        :return:一个字典，这个字典的key是车速（int），value是对应速度生成的edges,这个edges是一个列表，
+                元素是一个元组（源路口id，目的路口id，权值）
         例如：
         {4 : [(1,2,10),(2,3,18),(3,4,16),...] , 5 : [(1,2,9),(2,3,17),(3,4,16),...]}
 
         """
 
+        road_dict = self.road_dict #拿到路字典
+        speed_dict = {} #初始化结果字典
 
-        return {}
+        for car_speed in car_speed_list: #对于每一种车速进行遍历
 
+            for road in road_dict: #对于每一种测速遍历每一条路
+                road_limit_speed = road_dict[road].limit_speed
+                final_speed = min(road_limit_speed, car_speed) #拿到本车速的理论最高速
+
+                if car_speed not in speed_dict:#差错控制
+                    speed_dict[car_speed] = []
+
+                if road_dict[road].is_dual:#如果路是双向
+
+                    speed_dict[car_speed].append((road_dict[road].orig_id,
+                                                    road_dict[road].dest_id,
+                                                    road_dict[road].road_len // final_speed))
+                    speed_dict[car_speed].append((road_dict[road].dest_id,
+                                                    road_dict[road].orig_id,
+                                                    road_dict[road].road_len // final_speed))
+                else:#如果路是单向
+
+                    speed_dict[car_speed].append((road_dict[road].orig_id,
+                                                    road_dict[road].dest_id,
+                                                    road_dict[road].road_len // final_speed))
+
+        return speed_dict
 
 
 
@@ -240,7 +260,6 @@ class Answer(object):
 
     def __repr__(self) -> str:
         return str(self.car_id)
-
 
 # test
 # r = RoadWay("501",10,6,5,"1","2",True)
