@@ -11,6 +11,8 @@ import base_class
 
 class Tools(object):
 
+    passtime = 1
+
     # 初始化输入文件路径
     def __init__(self, car_path: str, road_path: str, cross_path: str, answer_path: str):
         self.car_path = car_path
@@ -218,21 +220,41 @@ class Tools(object):
             #针对每一个终点生成最短路径列表
             for to_node,shortest_path in shortest_path_dict.items():
 
-                #不获取最短路，只拿到最短路的列表
-                path_list = self.tranfer_exp(shortest_path[0],shortest_path[1])[1]
+                #获取最短路(最短调度时间)，最短路的列表
+                shortpathtime,path_list = self.tranfer_exp(shortest_path[0],shortest_path[1])
 
 
                 #针对相同源id的车,如果目的地相同，那么就可以生成答案了
                 for car in car_list:
                     if eval(car.dest_cross) == eval(to_node):
                         car_id = car.car_id #答案对象的car_id
-                        start_time = car.start_time #答案对象的start_time
                         road_id_list = rcmap.transfer_cross_to_road(path_list) #答案对象的path_list
+
+                        start_time = self.compute_start_time_of_car(car,shortpathtime)  # 答案对象的start_time
+
                         # road_id_list = path_list
                         answer = base_class.Answer(car_id,start_time,road_id_list)
                         answer_list.append(answer)
 
         return answer_list
+
+
+    #计算车的实际运行时间
+    def compute_start_time_of_car(self,car,shortpathtime):
+        """
+        :param 当前的车对象
+        :param shortpathtime: 该车到终点的最短运行时间
+        :return: starttime:该车的实际出发时间
+        """
+        starttime = 1
+        if car.start_time > Tools.passtime:#如果计划出发时间大于实际出发时间
+            Tools.passtime = car.start_time
+
+        starttime = Tools.passtime
+        Tools.passtime += shortpathtime #全局时间推迟一辆车的运行时间
+
+        return starttime
+
 
 
 
@@ -249,6 +271,7 @@ class Tools(object):
         with open(answer_path, 'w', encoding="utf-8") as f:
             for answer in answer_list:
                 f.write(str(answer) + "\n")
+
 
 
 # ---------------------------------------- test ----------------------------------------
@@ -297,10 +320,10 @@ t.write_answer(answers_list)
 #
 # start = time.time()
 #
-# tool = Tools("../config/car.txt",
-#           "../config/road.txt",
-#           "../config/cross.txt",
-#           "../config/answer.txt")
+# tool = Tools("../1-map-training-1/car.txt",
+#           "../1-map-training-1/road.txt",
+#           "../1-map-training-1/cross.txt",
+#           "../1-map-training-1/answer.txt")
 #
 #
 # #读各种数据
