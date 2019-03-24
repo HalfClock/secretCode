@@ -11,7 +11,7 @@ import base_class
 
 class Tools(object):
 
-    passtime = 1
+    # passtime = 1
 
     # 初始化输入文件路径
     def __init__(self, car_path: str, road_path: str, cross_path: str, answer_path: str):
@@ -200,6 +200,14 @@ class Tools(object):
         #初始化答案对象列表
         answer_list = []
 
+        #初始化各路口的记录值字典
+
+        cross_dict_of_shortpath = defaultdict(int)
+
+        for crossid in rcmap.cross_dict.keys():
+            cross_dict_of_shortpath[crossid] = 1
+
+
         #将same_speed_car_list以不同的源路口进行分类
         diff_ori_car_dict = self.classify_of_diff_ori_car(same_speed_car_list)
 
@@ -230,7 +238,7 @@ class Tools(object):
                         car_id = car.car_id #答案对象的car_id
                         road_id_list = rcmap.transfer_cross_to_road(path_list) #答案对象的path_list
 
-                        start_time = self.compute_start_time_of_car(car,shortpathtime)  # 答案对象的start_time
+                        start_time = self.compute_start_time_of_car(car,shortpathtime,cross_dict_of_shortpath)  # 答案对象的start_time
 
                         # road_id_list = path_list
                         answer = base_class.Answer(car_id,start_time,road_id_list)
@@ -240,18 +248,18 @@ class Tools(object):
 
 
     #计算车的实际运行时间
-    def compute_start_time_of_car(self,car,shortpathtime):
+    def compute_start_time_of_car(self,car,shortpathtime,cross_dict_of_shortpath):
         """
         :param 当前的车对象
         :param shortpathtime: 该车到终点的最短运行时间
         :return: starttime:该车的实际出发时间
         """
-        starttime = 1
-        if car.start_time > Tools.passtime:#如果计划出发时间大于实际出发时间
-            Tools.passtime = car.start_time
 
-        starttime = Tools.passtime
-        Tools.passtime += shortpathtime #全局时间推迟一辆车的运行时间
+        if car.start_time > cross_dict_of_shortpath[car.orig_cross]:#如果计划出发时间大于实际出发时间
+            cross_dict_of_shortpath[car.orig_cross] = car.start_time
+
+        starttime = cross_dict_of_shortpath[car.orig_cross]
+        cross_dict_of_shortpath[car.orig_cross] += shortpathtime + 1 #全局时间推迟一辆车的运行时间
 
         return starttime
 
@@ -317,51 +325,51 @@ t.write_answer(answers_list)
 
 """
 
-#
-# start = time.time()
-#
-# tool = Tools("../1-map-training-1/car.txt",
-#           "../1-map-training-1/road.txt",
-#           "../1-map-training-1/cross.txt",
-#           "../1-map-training-1/answer.txt")
-#
-#
-# #读各种数据
-# road_list = tool.read_road()
-# cross_list = tool.read_cross()
-# carlist = tool.read_car()
-#
-# #获取不同速度车的字典
-# diff_speed_car_dict = tool.get_diff_speed_car_dict(carlist)
-#
-# #获取速度列表
-# diff_speed_list = list(diff_speed_car_dict.keys())
-#
-# #新建一个地图类
-# rcMap_test = base_class.RoadCrossMap(road_list, cross_list, diff_speed_list)
-#
-# #获取不同速度的地图
-# speed_dict = rcMap_test.init_map_of_diff_speed(diff_speed_list)
-#
-# all_answer_list = []
-#
-# #对于每一种速度生成的地图而言
-# for speed,edges in speed_dict.items():
-#
-#     #获取相同速度车字典
-#     same_speed_car_list = diff_speed_car_dict[speed]
-#
-#     #针对相同速度的车生成答案列表
-#     answerlist = tool.dijkstra(edges, same_speed_car_list,rcMap_test)
-#
-#     #增加到所有的文件列表后
-#     all_answer_list += answerlist
-#
-# print(all_answer_list)
-#
-# tool.write_answer(all_answer_list)
-#
-# end = time.time()
-#
-# print('Running time: %s Seconds'%(end-start))
+
+start = time.time()
+
+tool = Tools("../1-map-training-2/car.txt",
+          "../1-map-training-2/road.txt",
+          "../1-map-training-2/cross.txt",
+          "../1-map-training-2/answer.txt")
+
+
+#读各种数据
+road_list = tool.read_road()
+cross_list = tool.read_cross()
+carlist = tool.read_car()
+
+#获取不同速度车的字典
+diff_speed_car_dict = tool.get_diff_speed_car_dict(carlist)
+
+#获取速度列表
+diff_speed_list = list(diff_speed_car_dict.keys())
+
+#新建一个地图类
+rcMap_test = base_class.RoadCrossMap(road_list, cross_list, diff_speed_list)
+
+#获取不同速度的地图
+speed_dict = rcMap_test.init_map_of_diff_speed(diff_speed_list)
+
+all_answer_list = []
+
+#对于每一种速度生成的地图而言
+for speed,edges in speed_dict.items():
+
+    #获取相同速度车字典
+    same_speed_car_list = diff_speed_car_dict[speed]
+
+    #针对相同速度的车生成答案列表
+    answerlist = tool.dijkstra(edges, same_speed_car_list,rcMap_test)
+
+    #增加到所有的文件列表后
+    all_answer_list += answerlist
+
+print(all_answer_list)
+
+tool.write_answer(all_answer_list)
+
+end = time.time()
+
+print('Running time: %s Seconds'%(end-start))
 
