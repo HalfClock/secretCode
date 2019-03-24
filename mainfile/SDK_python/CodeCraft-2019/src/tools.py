@@ -205,7 +205,11 @@ class Tools(object):
         cross_dict_of_shortpath = defaultdict(int)
 
         for crossid in rcmap.cross_dict.keys():
-            cross_dict_of_shortpath[crossid] = 1
+            cross_dict_of_shortpath[crossid] = 0
+
+        #-1key作为计数器
+        cross_dict_of_shortpath[-1] = 0
+
 
 
         #将same_speed_car_list以不同的源路口进行分类
@@ -247,22 +251,51 @@ class Tools(object):
         return answer_list
 
 
-    #计算车的实际运行时间
-    def compute_start_time_of_car(self,car,shortpathtime,cross_dict_of_shortpath):
+    # #计算车的实际运行时间------------------ 方案一 ------------------
+    # def compute_start_time_of_car(self,car,shortpathtime,cross_dict_of_shortpath):
+    #     """
+    #     :param 当前的车对象
+    #     :param shortpathtime: 该车到终点的最短运行时间
+    #     :return: starttime:该车的实际出发时间
+    #     """
+    #
+    #     if car.start_time > cross_dict_of_shortpath[car.orig_cross]:#如果计划出发时间大于实际出发时间
+    #         cross_dict_of_shortpath[car.orig_cross] = car.start_time
+    #
+    #     starttime = cross_dict_of_shortpath[car.orig_cross]
+    #     cross_dict_of_shortpath[car.orig_cross] += shortpathtime + 1 #全局时间推迟一辆车的运行时间
+    #
+    #     return starttime
+
+    # 计算车的实际运行时间------------------ 方案二 ------------------
+    def compute_start_time_of_car(self, car, shortpathtime, cross_dict_of_shortpath):
         """
         :param 当前的车对象
         :param shortpathtime: 该车到终点的最短运行时间
         :return: starttime:该车的实际出发时间
         """
 
-        if car.start_time > cross_dict_of_shortpath[car.orig_cross]:#如果计划出发时间大于实际出发时间
-            cross_dict_of_shortpath[car.orig_cross] = car.start_time
+        starttime = 1
 
-        starttime = cross_dict_of_shortpath[car.orig_cross]
-        cross_dict_of_shortpath[car.orig_cross] += shortpathtime + 1 #全局时间推迟一辆车的运行时间
+        # if car.orig_cross == '28':
+        #     mul = 0
+
+        if cross_dict_of_shortpath[car.orig_cross] == 0 :
+            #如果这个路口没有被访问过
+            #这个路口是第几个被访问的路口那么就把字典值设置成几。
+
+            cross_dict_of_shortpath[-1] += 1 #被访问数+1
+            mul = cross_dict_of_shortpath[-1] - 1
+            cross_dict_of_shortpath[car.orig_cross] = cross_dict_of_shortpath[-1]
+
+        elif cross_dict_of_shortpath[car.orig_cross] != 0:
+            #如果这个路口被访问过了，那么就
+            mul = cross_dict_of_shortpath[car.orig_cross] - 1
+
+        starttime = car.start_time + 14 * mul
+
 
         return starttime
-
 
 
 
@@ -324,52 +357,53 @@ answers_list = [answer1, answer2, answer3]
 t.write_answer(answers_list)
 
 """
-
-
-start = time.time()
-
-tool = Tools("../1-map-training-2/car.txt",
-          "../1-map-training-2/road.txt",
-          "../1-map-training-2/cross.txt",
-          "../1-map-training-2/answer.txt")
-
-
-#读各种数据
-road_list = tool.read_road()
-cross_list = tool.read_cross()
-carlist = tool.read_car()
-
-#获取不同速度车的字典
-diff_speed_car_dict = tool.get_diff_speed_car_dict(carlist)
-
-#获取速度列表
-diff_speed_list = list(diff_speed_car_dict.keys())
-
-#新建一个地图类
-rcMap_test = base_class.RoadCrossMap(road_list, cross_list, diff_speed_list)
-
-#获取不同速度的地图
-speed_dict = rcMap_test.init_map_of_diff_speed(diff_speed_list)
-
-all_answer_list = []
-
-#对于每一种速度生成的地图而言
-for speed,edges in speed_dict.items():
-
-    #获取相同速度车字典
-    same_speed_car_list = diff_speed_car_dict[speed]
-
-    #针对相同速度的车生成答案列表
-    answerlist = tool.dijkstra(edges, same_speed_car_list,rcMap_test)
-
-    #增加到所有的文件列表后
-    all_answer_list += answerlist
-
-print(all_answer_list)
-
-tool.write_answer(all_answer_list)
-
-end = time.time()
-
-print('Running time: %s Seconds'%(end-start))
-
+#
+#
+# start = time.time()
+#
+# tool = Tools("../1-map-training-2/car.txt",
+#           "../1-map-training-2/road.txt",
+#           "../1-map-training-2/cross.txt",
+#           "../1-map-training-2/answer.txt")
+#
+#
+# #读各种数据
+# road_list = tool.read_road()
+# cross_list = tool.read_cross()
+# carlist = tool.read_car()
+#
+#
+# #获取不同速度车的字典
+# diff_speed_car_dict = tool.get_diff_speed_car_dict(carlist)
+#
+# #获取速度列表
+# diff_speed_list = list(diff_speed_car_dict.keys())
+#
+# #新建一个地图类
+# rcMap_test = base_class.RoadCrossMap(road_list, cross_list, diff_speed_list)
+#
+# #获取不同速度的地图
+# speed_dict = rcMap_test.init_map_of_diff_speed(diff_speed_list)
+#
+# all_answer_list = []
+#
+# #对于每一种速度生成的地图而言
+# for speed,edges in speed_dict.items():
+#
+#     #获取相同速度车字典
+#     same_speed_car_list = diff_speed_car_dict[speed]
+#
+#     #针对相同速度的车生成答案列表
+#     answerlist = tool.dijkstra(edges, same_speed_car_list,rcMap_test)
+#
+#     #增加到所有的文件列表后
+#     all_answer_list += answerlist
+#
+# print(all_answer_list)
+#
+# tool.write_answer(all_answer_list)
+#
+# end = time.time()
+#
+# print('Running time: %s Seconds'%(end-start))
+#
