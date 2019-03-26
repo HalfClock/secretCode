@@ -1,3 +1,5 @@
+# 路口数组， 65 * 5
+# 1，2，3，4列分别代表路口的上、右、下、左四个方向
 cross = [
     [0, 0, 0, 0, 0],
     [1, 5000, 5007, -1, -1],
@@ -67,7 +69,11 @@ cross = [
 ]
 
 
+# 维度
 num = int((len(cross)-1)**0.5)
+
+# 生成地图，左下角的路口设置为1
+# a是二维数组，(num+1) * (num+1)
 
 a = []
 
@@ -113,12 +119,14 @@ class C:
             return False
 
 
+# 存储路口对象
 cross_obj_arr = []
 for index in range(len(cross)):
     c = C(cross[index][1], cross[index][2], cross[index][3], cross[index][4])
     cross_obj_arr.append(c)
 
 
+# 判断地图是否填满，行列从1开始
 def if_a_not_full(n):
     for i in range(1, n+1):
         for j in range(1, n+1):
@@ -127,6 +135,7 @@ def if_a_not_full(n):
     return False
 
 
+# 输出地图的路口及连接的道路
 def print_a_with_road(n):
     for i in range(1, n+1):
         print("           ")
@@ -144,10 +153,10 @@ def print_a_with_road(n):
                 print("0000    ", end='\t')
 
 
-while if_a_not_full(num):
+while if_a_not_full(num):  # 当路口未填满时
     for i in range(1, num+1):
         for j in range(1, num+1):
-            if a[i][j] != 0:
+            if a[i][j] != 0:  # 不为0说明该处由路口，根据这个路口找与其相连的路口
                 # print(cross_obj_arr[a[i][j]].up)
                 # print(cross_obj_arr[a[i][j]].right)
                 # print(cross_obj_arr[a[i][j]].down)
