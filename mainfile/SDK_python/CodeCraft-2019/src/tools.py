@@ -2,6 +2,7 @@
     工具类模块：
         输入文件转换成对应的数据结构、如将car.txt转换成car对象列表
 """
+import math
 import time
 from collections import defaultdict
 from heapq import heappop, heappush
@@ -134,6 +135,58 @@ class Tools(object):
         return diff_ori_car_dict
 
 
+    #给定路口的位置方阵，计算每个路口的层级及优先级+各层级的延迟
+    def compute_cross_priority(self,cross_location_matrix):
+        """
+        这个函数假设路口位置矩阵是一个方阵
+        :param cross_location_matrix: 路口位置矩阵
+        :return: 层级数，路口优先级字典：层级数，{key = 路口id，value = (层级数，优先级数)}
+                各层级延迟字典：键是什么层级，值是（延迟，有多少个优先级）{key:layer,value: (delay,priority_num)}
+        """
+
+        # 确定有多少层级
+        lens = len(cross_location_matrix)#lens表示每一行 /每一列有多少个路口
+        layers_num = math.ceil(float(len(cross_location_matrix)) / 2) #总共有多少层级
+
+        cross_priority_dict = {}#初始化返回层级数，路口优先级字典
+        delay_time_dict = {}#初始化各层级延迟字典
+        inital_delay = 22#最初层级的延迟
+
+        for layer in range(0, layers_num):
+            count = 0#初始化每一个层级的优先级
+            for j in range(layer, lens - layer):#遍历当前层级的行元素及与该元素原点对称的元素
+                cross_priority_dict[cross_location_matrix[layer][j]] = (layer, count) #行元素
+                cross_priority_dict[cross_location_matrix[lens - layer - 1][lens - j - 1]] = (layer, count) #原点对称的元素
+                count += 1
+
+            for i in range(layer + 1, lens - layer - 1):#遍历当前层级的列元素及与该元素原点对称的元素
+                cross_priority_dict[cross_location_matrix[i][lens - layer - 1]] = (layer, count) #列元素
+                cross_priority_dict[cross_location_matrix[lens - i - 1][layer]] = (layer, count) #原点对称的元素
+                count += 1
+
+            #********************计算层级延迟的部分*************************
+            # lay_delay = inital_delay + layer*3
+            lay_delay = inital_delay + layer//2
+            pri_num = (lens - layer*2)*2 -2
+
+            if not pri_num:#差错控制
+                pri_num = 1
+
+            delay_time_dict[layer] = (lay_delay,pri_num)
+
+
+        return delay_time_dict,cross_priority_dict
+
+    # #计算各层延迟，及各层的优先级数量
+    # def compute_delay_time_dict(self,layers_num):
+    #     """
+    #
+    #     :param layers_num: 层级数
+    #     :return: dict  键是什么层级，值是（延迟，有多少个优先级）{key:layer,value: priority_num}
+    #     """
+
+
+
     #dijkstra算法，获取单源点到多终点的最短路，并返回最短路字典
     def dijkstra_raw(self,edges, from_node, to_node_list):
         """
@@ -200,17 +253,25 @@ class Tools(object):
         #初始化答案对象列表
         answer_list = []
 
-        #初始化各路口的记录值字典
 
-        cross_dict_of_shortpath = defaultdict(int)
+        #————————方案二 start——————————
+        # #初始化各路口的记录值字典
+        # cross_dict_of_shortpath = defaultdict(int)
+        #
+        # for crossid in rcmap.cross_dict.keys():
+        #     cross_dict_of_shortpath[crossid] = 0
+        #
+        # #-1key作为计数器
+        # cross_dict_of_shortpath[-1] = 0
+        # ————————方案二 end——————————
 
-        for crossid in rcmap.cross_dict.keys():
-            cross_dict_of_shortpath[crossid] = 0
+        #————————方案三 start——————————
+        #计算该地图的路口位置矩阵
+        cross_location_matrix = rcmap.compute_cross_location_matrix()
+        #根据路口位置矩阵计算、每个路口的层级及优先级、并返回路口优先级字典
+        delay_time_dict,cross_priority_dict = self.compute_cross_priority(cross_location_matrix)
 
-        #-1key作为计数器
-        cross_dict_of_shortpath[-1] = 0
-
-
+        # ————————方案三 end——————————
 
         #将same_speed_car_list以不同的源路口进行分类
         diff_ori_car_dict = self.classify_of_diff_ori_car(same_speed_car_list)
@@ -242,7 +303,10 @@ class Tools(object):
                         car_id = car.car_id #答案对象的car_id
                         road_id_list = rcmap.transfer_cross_to_road(path_list) #答案对象的path_list
 
-                        start_time = self.compute_start_time_of_car(car,shortpathtime,cross_dict_of_shortpath)  # 答案对象的start_time
+                        #方案二
+                        #start_time = self.compute_start_time_of_car(car,shortpathtime,cross_dict_of_shortpath)  # 答案对象的start_time
+                        #方案三
+                        start_time = self.compute_start_time_of_car(car,delay_time_dict,cross_priority_dict)
 
                         # road_id_list = path_list
                         answer = base_class.Answer(car_id,start_time,road_id_list)
@@ -268,35 +332,59 @@ class Tools(object):
     #     return starttime
 
     # 计算车的实际运行时间------------------ 方案二 ------------------
-    def compute_start_time_of_car(self, car, shortpathtime, cross_dict_of_shortpath):
+    # def compute_start_time_of_car(self, car, shortpathtime, cross_dict_of_shortpath):
+    #     """
+    #     :param 当前的车对象
+    #     :param shortpathtime: 该车到终点的最短运行时间
+    #     :return: starttime:该车的实际出发时间
+    #     """
+    #
+    #     starttime = 1
+    #
+    #     # if car.orig_cross == '28':
+    #     #     mul = 0
+    #
+    #     if cross_dict_of_shortpath[car.orig_cross] == 0 :
+    #         #如果这个路口没有被访问过
+    #         #这个路口是第几个被访问的路口那么就把字典值设置成几。
+    #
+    #         cross_dict_of_shortpath[-1] += 1 #被访问数+1
+    #         mul = cross_dict_of_shortpath[-1] - 1
+    #         cross_dict_of_shortpath[car.orig_cross] = cross_dict_of_shortpath[-1]
+    #
+    #     elif cross_dict_of_shortpath[car.orig_cross] != 0:
+    #         #如果这个路口被访问过了，那么就
+    #         mul = cross_dict_of_shortpath[car.orig_cross] - 1
+    #
+    #     starttime = car.start_time + 14 * mul
+    #
+    #
+    #     return starttime
+
+
+    # 计算车的实际运行时间------------------ 方案三 ------------------
+    def compute_start_time_of_car(self, car,delay_time_dict,cross_priority_dict):
         """
         :param 当前的车对象
-        :param shortpathtime: 该车到终点的最短运行时间
+        :param cross_priority_dict: 路口优先级字典{key = 路口id，value = (层级数，优先级数)}
+        :param delay_time_dict 各层级延迟字典：键是什么层级，值是（延迟，有多少个优先级）{key:layer,value: (delay,priority_num)}
         :return: starttime:该车的实际出发时间
         """
+        layer,priority = cross_priority_dict[car.orig_cross] #获取本路口的层级及在该层级的优先级
 
-        starttime = 1
+        delay = delay_time_dict[layer][0] #获取本层级的延迟
 
-        # if car.orig_cross == '28':
-        #     mul = 0
+        all_delay_before = 0 #初始化这一层级之前所有的延迟
 
-        if cross_dict_of_shortpath[car.orig_cross] == 0 :
-            #如果这个路口没有被访问过
-            #这个路口是第几个被访问的路口那么就把字典值设置成几。
+        #计算这一层级之前所有的延迟
+        for i in range(layer):
+            delay_by_layer,pri_num = delay_time_dict[i]
+            all_delay_before += delay_by_layer * (pri_num)
 
-            cross_dict_of_shortpath[-1] += 1 #被访问数+1
-            mul = cross_dict_of_shortpath[-1] - 1
-            cross_dict_of_shortpath[car.orig_cross] = cross_dict_of_shortpath[-1]
-
-        elif cross_dict_of_shortpath[car.orig_cross] != 0:
-            #如果这个路口被访问过了，那么就
-            mul = cross_dict_of_shortpath[car.orig_cross] - 1
-
-        starttime = car.start_time + 14 * mul
-
+        #本车的实际开始时间是本车的计划开始时间 + 本路口层级之前的所有延迟 + 本路口优先级之前的延迟
+        starttime = car.start_time + all_delay_before + delay * priority
 
         return starttime
-
 
 
     # 将answer_list写入文件
@@ -357,53 +445,61 @@ answers_list = [answer1, answer2, answer3]
 t.write_answer(answers_list)
 
 """
-#
-#
-# start = time.time()
-#
-# tool = Tools("../1-map-training-2/car.txt",
-#           "../1-map-training-2/road.txt",
-#           "../1-map-training-2/cross.txt",
-#           "../1-map-training-2/answer.txt")
-#
-#
-# #读各种数据
-# road_list = tool.read_road()
-# cross_list = tool.read_cross()
-# carlist = tool.read_car()
-#
-#
-# #获取不同速度车的字典
-# diff_speed_car_dict = tool.get_diff_speed_car_dict(carlist)
-#
-# #获取速度列表
-# diff_speed_list = list(diff_speed_car_dict.keys())
-#
-# #新建一个地图类
-# rcMap_test = base_class.RoadCrossMap(road_list, cross_list, diff_speed_list)
-#
-# #获取不同速度的地图
-# speed_dict = rcMap_test.init_map_of_diff_speed(diff_speed_list)
-#
-# all_answer_list = []
-#
-# #对于每一种速度生成的地图而言
-# for speed,edges in speed_dict.items():
-#
-#     #获取相同速度车字典
-#     same_speed_car_list = diff_speed_car_dict[speed]
-#
-#     #针对相同速度的车生成答案列表
-#     answerlist = tool.dijkstra(edges, same_speed_car_list,rcMap_test)
-#
-#     #增加到所有的文件列表后
-#     all_answer_list += answerlist
-#
-# print(all_answer_list)
-#
-# tool.write_answer(all_answer_list)
-#
-# end = time.time()
-#
-# print('Running time: %s Seconds'%(end-start))
+
+
+start = time.time()
+
+tool = Tools("../1-map-training-1/car.txt",
+          "../1-map-training-1/road.txt",
+          "../1-map-training-1/cross.txt",
+          "../1-map-training-1/answer.txt")
+
+
+#读各种数据
+road_list = tool.read_road()
+cross_list = tool.read_cross()
+carlist = tool.read_car()
+
+
+#获取不同速度车的字典
+diff_speed_car_dict = tool.get_diff_speed_car_dict(carlist)
+
+#获取速度列表
+diff_speed_list = list(diff_speed_car_dict.keys())
+
+#新建一个地图类
+rcMap_test = base_class.RoadCrossMap(road_list, cross_list, diff_speed_list)
+
+cclm = rcMap_test.compute_cross_location_matrix()
+
+print(cclm)
+print(tool.compute_cross_priority(cclm)[0])
+print(tool.compute_cross_priority(cclm)[1])
+
+
+
+#获取不同速度的地图
+speed_dict = rcMap_test.init_map_of_diff_speed(diff_speed_list)
+
+all_answer_list = []
+
+#对于每一种速度生成的地图而言
+for speed,edges in speed_dict.items():
+
+    #获取相同速度车字典
+    same_speed_car_list = diff_speed_car_dict[speed]
+
+    #针对相同速度的车生成答案列表
+    answerlist = tool.dijkstra(edges, same_speed_car_list,rcMap_test)
+
+    #增加到所有的文件列表后
+    all_answer_list += answerlist
+
+print(all_answer_list)
+
+tool.write_answer(all_answer_list)
+
+end = time.time()
+
+print('Running time: %s Seconds'%(end-start))
 #

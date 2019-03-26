@@ -10,6 +10,9 @@
 
 
 # 道路类
+import math
+
+
 class RoadWay(object):
 
     def __init__(self, road_id: str = None, road_len: int = None, limit_speed: int = None, lane: int = None,
@@ -207,6 +210,16 @@ include cross:
     #             if cross_item1 != cross_item2:
     #                 pass
     #     pass
+
+    #返回该地图中的路口位置矩阵
+    def compute_cross_location_matrix(self):
+        """
+        :return: 二维列表，记录着所有的路口的邻接信息
+        """
+        lens = int(math.sqrt(len(self.cross_dict)))
+
+        cross_location_matrix = [[str(i + j * lens) for i in range(1, lens+1)] for j in range(lens)]
+        return cross_location_matrix
 
 
     #输入两个路口的id，若两个路口相邻则返回连接两个路口的道路id，若无则返回-1

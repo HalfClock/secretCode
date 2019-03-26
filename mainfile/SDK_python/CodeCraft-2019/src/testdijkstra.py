@@ -1,3 +1,4 @@
+import math
 import random
 from collections import defaultdict
 from heapq import *
@@ -84,8 +85,39 @@ def dijkstra(edges, same_speed_car_list):
     pass
 
 
+def compute_cross_priority(cross_location_matrix):
+    """
+    这个函数假设路口位置矩阵是一个方阵
+    :param cross_location_matrix: 路口位置矩阵
+    :return: 路口优先级字典：{key = 路口id，value = (层级数，优先级数)}
+    """
 
-# ---------------------------------------- test ----------------------------------------
+    #确定有多少层级
+    lens = len(cross_location_matrix)
+    layers_num =  math.ceil(float(len(cross_location_matrix))/2)
+
+    cross_priority_dict = {}
+
+    for layer in range(0,layers_num):
+        count = 0
+        for j in range(layer,lens-layer):
+
+            cross_priority_dict[cross_location_matrix[layer][j]] = (layer,count)
+            cross_priority_dict[cross_location_matrix[lens-layer -1][lens - j -1]] = (layer,count)
+            count+=1
+
+        for i in range(layer + 1,lens - layer -1):
+
+            cross_priority_dict[cross_location_matrix[i][lens - layer -1]] = (layer,count)
+            cross_priority_dict[cross_location_matrix[lens - i -1][layer]] = (layer,count)
+            count+=1
+
+    return cross_priority_dict
+
+
+"""
+
+# ---------------------------------------- test dijkstra ----------------------------------------
 
 ### ==================== Given a list of nodes in the topology shown in Fig. 1.
 list_nodes_id = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
@@ -93,7 +125,7 @@ list_nodes_id = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 1
 M = 99999  # This represents a large distance. It means that there is no link.
 ### M_topo is the 2-dimensional adjacent matrix used to represent a topology.
 
-'''
+
 M_topo = [
     [M, 1, 1, M, 1, M, 1, 1, 1, M, M, M, M, M, M, M, M, M, M, M, M],
     [1, M, 1, M, M, 1, M, M, M, M, M, M, M, M, M, M, M, M, M, M, M],
@@ -118,7 +150,7 @@ M_topo = [
     [M, M, M, M, M, M, M, M, M, M, M, M, M, M, M, M, 1, M, M, 1, M]
 ]
 
-'''
+
 
 mat_len = 10
 
@@ -156,3 +188,16 @@ for item in returndict.values():
 end = time.time()
 print('Running time: %s Seconds'%(end-start))
 print("------------------")
+
+"""
+
+# ---------------------------------------- test 设置优先级 ----------------------------------------
+
+cross_location_matrix = [[i+j*8 for i in range(1,9)] for j in range(8)]
+
+print(compute_cross_priority(cross_location_matrix))
+
+
+
+
+

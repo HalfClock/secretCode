@@ -65,8 +65,12 @@ cross = [
     [63, 5104, -1, 5103, 5096],
     [64, -1, -1, 5104, 5097]
 ]
+
+
 num = int((len(cross)-1)**0.5)
+
 a = []
+
 for i in range(num+1):
     new_arr = []
     for j in range(num+1):
