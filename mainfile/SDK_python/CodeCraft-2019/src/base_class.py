@@ -44,7 +44,7 @@ class CrossRoads(object):
 
 # 车类
 class Car(object):
-    def __init__(self, car_id: str = None, orig_cross: str = None,dest_cross: str = None, limit_speed: int = None,
+    def __init__(self, car_id: str = None, orig_cross: str = None, dest_cross: str = None, limit_speed: int = None,
                  start_time: int = None):
         self.car_id = car_id  # 车id
         self.dest_cross = dest_cross  # 目的路口id
@@ -208,32 +208,31 @@ include cross:
     #                 pass
     #     pass
 
-
-    #输入两个路口的id，若两个路口相邻则返回连接两个路口的道路id，若无则返回-1
-    def find_road_by_cross(self,cross_from,cross_to):
+    # 输入两个路口的id，若两个路口相邻则返回连接两个路口的道路id，若无则返回-1
+    def find_road_by_cross(self, cross_from, cross_to):
         """
 
         :param cross_from: 源路口id
         :param cross_to: 目的路口id
         :return: 道路id/-1
         """
-        #与源路口连接的道路id
+        # 与源路口连接的道路id
         road_list = self.find_road_of_cross(cross_from)
 
         for roadid in road_list:
             road_obj = self.road_dict[roadid]
 
-            if road_obj.is_dual:#如果道路是双向的、那么cross_to可能是这条路的源点也有可能是这条路的终点
+            if road_obj.is_dual:  # 如果道路是双向的、那么cross_to可能是这条路的源点也有可能是这条路的终点
                 if (road_obj.dest_id == cross_to) or (road_obj.orig_id == cross_to):
                     return roadid
-            elif not road_obj.is_dual: #如果这条路是单向的，那么cross_to只能是这条路的终点
+            elif not road_obj.is_dual:  # 如果这条路是单向的，那么cross_to只能是这条路的终点
                 if road_obj.dest_id == cross_to:
                     return roadid
 
         return -1
 
-    #输入一个路口列表，其中相邻的两个路口必定是一个道路的源点和终点,返回两两连接的道路id列表，如果函数运行中发现不是，那么返回-1
-    def transfer_cross_to_road(self,cross_list):
+    # 输入一个路口列表，其中相邻的两个路口必定是一个道路的源点和终点,返回两两连接的道路id列表，如果函数运行中发现不是，那么返回-1
+    def transfer_cross_to_road(self, cross_list):
         """
         :param cross_list:
         :return: road_list
@@ -242,7 +241,7 @@ include cross:
 
         for i in range(len(cross_list) - 1):
 
-            road_id = self.find_road_by_cross(cross_list[i],cross_list[i+1])
+            road_id = self.find_road_by_cross(cross_list[i], cross_list[i + 1])
             if road_id == -1:
                 return -1
             else:
@@ -250,8 +249,7 @@ include cross:
 
         return road_list
 
-
-    #依据不同的车速生成不同的地图
+    # 依据不同的车速生成不同的地图
     def init_map_of_diff_speed(self, car_speed_list):
         """
         :param car_speed_list: 这个列表里有各种车速
@@ -291,10 +289,6 @@ include cross:
         return speed_dict
 
 
-
-
-
-
 # 答案类
 class Answer(object):
     def __init__(self, car_id: str = None, start_time: int = None, road_id_list: list = None):
@@ -307,7 +301,6 @@ class Answer(object):
 
     def __repr__(self) -> str:
         return str(self)
-
 
 # ---------------------------------------- test ----------------------------------------
 
@@ -330,4 +323,3 @@ class Answer(object):
 #
 # map = rcMap([r,r1],[c,c1])
 # print(map)
-
