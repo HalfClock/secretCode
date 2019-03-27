@@ -280,6 +280,40 @@ bool ifAnotfull(int n)//地图数组a还有没有被填满
 	}
 	return false;
 }
+
+void printAwithPrior(int p[11][11],int n)//输出带有优先级的路口地图
+{
+	for (int i = 1; i <= n; i++)
+	{
+		for (int j = 1; j <= n; j++)
+		{
+			cout<< setw(2) << a[i][j] << "("<<setw(2)<< p[i][j] << ")   ";
+		}
+		cout << endl<<endl;
+	}
+}
+
+void buildPrior(int n)//设定路口的优先级
+{
+	int half = n / 2;
+	int pri = 1;
+	int p[11][11];//start from 1
+	for(int i=1;i<= half;i++)//左上和右下
+		for (int j = 1; j <= half; j++)
+		{
+			p[i][j] = pri;
+			p[i + half][j + half] = pri;
+			pri++;
+		}
+	for (int i = 1; i <= half; i++)//右上和左下
+		for (int j = half+1; j <= n; j++)
+		{
+			p[i][j] = pri;
+			p[i + half][j - half] = pri;
+			pri++;
+		}
+	printAwithPrior(p,n);
+}
 int main()
 {
     std::cout << "Hello ZHH!\n";
@@ -321,8 +355,11 @@ int main()
 			}
 		}
 	}
-	//printA(n);//输出带有路口的地图
+	printA(n);//输出带有路口的地图
+	cout << endl;
 	printAwithRoad(n);//输出带有路口和道路的地图
+	cout << endl;
+	buildPrior(n);//输出带优先级的路口的地图
 }
 
 
