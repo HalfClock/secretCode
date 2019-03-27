@@ -135,8 +135,54 @@ class Tools(object):
         return diff_ori_car_dict
 
 
-    #给定路口的位置方阵，计算每个路口的层级及优先级+各层级的延迟
-    def compute_cross_priority(self,cross_location_matrix):
+    # #------------------ 方案三  start------------------
+    # #给定路口的位置方阵，计算每个路口的层级及优先级+各层级的延迟
+    # def compute_cross_priority(self,cross_location_matrix):
+    #     """
+    #     这个函数假设路口位置矩阵是一个方阵
+    #     :param cross_location_matrix: 路口位置矩阵
+    #     :return: 层级数，路口优先级字典：层级数，{key = 路口id，value = (层级数，优先级数)}
+    #             各层级延迟字典：键是什么层级，值是（延迟，有多少个优先级）{key:layer,value: (delay,priority_num)}
+    #     """
+    #
+    #     # 确定有多少层级
+    #     lens = len(cross_location_matrix)#lens表示每一行 /每一列有多少个路口
+    #     layers_num = math.ceil(float(len(cross_location_matrix)) / 2) #总共有多少层级
+    #
+    #     cross_priority_dict = {}#初始化返回层级数，路口优先级字典
+    #     delay_time_dict = {}#初始化各层级延迟字典
+    #     inital_delay = 22#最初层级的延迟
+    #
+    #     for layer in range(0, layers_num):
+    #         count = 0#初始化每一个层级的优先级
+    #         for j in range(layer, lens - layer):#遍历当前层级的行元素及与该元素原点对称的元素
+    #             cross_priority_dict[cross_location_matrix[layer][j]] = (layer, count) #行元素
+    #             cross_priority_dict[cross_location_matrix[lens - layer - 1][lens - j - 1]] = (layer, count) #原点对称的元素
+    #             count += 1
+    #
+    #         for i in range(layer + 1, lens - layer - 1):#遍历当前层级的列元素及与该元素原点对称的元素
+    #             cross_priority_dict[cross_location_matrix[i][lens - layer - 1]] = (layer, count) #列元素
+    #             cross_priority_dict[cross_location_matrix[lens - i - 1][layer]] = (layer, count) #原点对称的元素
+    #             count += 1
+    #
+    #         #********************计算层级延迟的部分*************************
+    #         # lay_delay = inital_delay + layer*3
+    #         lay_delay = inital_delay + layer//2
+    #         pri_num = (lens - layer*2)*2 -2
+    #
+    #         if not pri_num:#差错控制
+    #             pri_num = 1
+    #
+    #         delay_time_dict[layer] = (lay_delay,pri_num)
+    #
+    #
+    #     return delay_time_dict,cross_priority_dict
+    #
+    # # ------------------ 方案三  end------------------
+
+    # #------------------ 方案四  start------------------
+    # 给定路口的位置方阵，计算每个路口的层级及优先级+各层级的延迟
+    def compute_cross_priority(self, cross_location_matrix):
         """
         这个函数假设路口位置矩阵是一个方阵
         :param cross_location_matrix: 路口位置矩阵
@@ -145,45 +191,50 @@ class Tools(object):
         """
 
         # 确定有多少层级
-        lens = len(cross_location_matrix)#lens表示每一行 /每一列有多少个路口
-        layers_num = math.ceil(float(len(cross_location_matrix)) / 2) #总共有多少层级
+        lens = len(cross_location_matrix)  # lens表示每一行 /每一列有多少个路口
+        layers_num = math.ceil(float(len(cross_location_matrix)) / 2)  # 总共有多少层级
 
-        cross_priority_dict = {}#初始化返回层级数，路口优先级字典
-        delay_time_dict = {}#初始化各层级延迟字典
-        inital_delay = 22#最初层级的延迟
+        cross_priority_dict = {}  # 初始化返回层级数，路口优先级字典
+        delay_time_dict = {}  # 初始化各层级延迟字典
+        inital_delay = 9  # 最初层级的延迟
 
+        # ********************计算各层优先级的部分*************************
         for layer in range(0, layers_num):
-            count = 0#初始化每一个层级的优先级
-            for j in range(layer, lens - layer):#遍历当前层级的行元素及与该元素原点对称的元素
-                cross_priority_dict[cross_location_matrix[layer][j]] = (layer, count) #行元素
-                cross_priority_dict[cross_location_matrix[lens - layer - 1][lens - j - 1]] = (layer, count) #原点对称的元素
+
+            count = 0  # 初始化每一个层级行的优先级
+
+            for j in range(layer, lens - layer -1):  # 遍历当前层级的行元素及与该元素原点对称的元素
+                cross_priority_dict[cross_location_matrix[layer][j]] = (layer, count)  # 行元素
                 count += 1
+                cross_priority_dict[cross_location_matrix[lens - layer - 1][lens - j - 1]] = (layer, count)  # 原点对称的元素
+                count += 3
 
-            for i in range(layer + 1, lens - layer - 1):#遍历当前层级的列元素及与该元素原点对称的元素
-                cross_priority_dict[cross_location_matrix[i][lens - layer - 1]] = (layer, count) #列元素
-                cross_priority_dict[cross_location_matrix[lens - i - 1][layer]] = (layer, count) #原点对称的元素
-                count += 1
+            count = 3 # 初始化每一个层级列的优先级
 
-            #********************计算层级延迟的部分*************************
-            # lay_delay = inital_delay + layer*3
-            lay_delay = inital_delay + layer//2
-            pri_num = (lens - layer*2)*2 -2
+            for i in range(layer , lens - layer - 1):  # 遍历当前层级的列元素及与该元素原点对称的元素
+                cross_priority_dict[cross_location_matrix[i][lens - layer - 1]] = (layer, count)  # 列元素
+                count -= 1
+                cross_priority_dict[cross_location_matrix[lens - i - 1][layer]] = (layer, count)  # 原点对称的元素
+                count += 5
 
-            if not pri_num:#差错控制
+            #如果矩阵是奇数x奇数的，需要给中心点补一个优先级
+            if layer == layers_num - 1 and lens % 2 == 1:
+                cross_priority_dict[cross_location_matrix[layer][layer]] = (layer, 1)
+
+            # ********************计算层级延迟的部分*************************
+
+            lay_delay = inital_delay + layer*2 #各层优先级之间的延迟
+
+            pri_num = (lens - 1 - layer*2) *4 #各层优先级的数量
+
+            if not pri_num:  # 差错控制
                 pri_num = 1
 
-            delay_time_dict[layer] = (lay_delay,pri_num)
+            delay_time_dict[layer] = (lay_delay, pri_num)
 
+        return delay_time_dict, cross_priority_dict
 
-        return delay_time_dict,cross_priority_dict
-
-    # #计算各层延迟，及各层的优先级数量
-    # def compute_delay_time_dict(self,layers_num):
-    #     """
-    #
-    #     :param layers_num: 层级数
-    #     :return: dict  键是什么层级，值是（延迟，有多少个优先级）{key:layer,value: priority_num}
-    #     """
+    # # ------------------ 方案四  end------------------
 
 
 
@@ -362,7 +413,7 @@ class Tools(object):
     #     return starttime
 
 
-    # 计算车的实际运行时间------------------ 方案三 ------------------
+    # 计算车的实际运行时间------------------ 方案三 、方案四共用------------------
     def compute_start_time_of_car(self, car,delay_time_dict,cross_priority_dict):
         """
         :param 当前的车对象
@@ -379,7 +430,8 @@ class Tools(object):
         #计算这一层级之前所有的延迟
         for i in range(layer):
             delay_by_layer,pri_num = delay_time_dict[i]
-            all_delay_before += delay_by_layer * (pri_num)
+            all_delay_before += delay_by_layer * pri_num
+            all_delay_before += 4
 
         #本车的实际开始时间是本车的计划开始时间 + 本路口层级之前的所有延迟 + 本路口优先级之前的延迟
         starttime = car.start_time + all_delay_before + delay * priority
@@ -502,4 +554,3 @@ tool.write_answer(all_answer_list)
 end = time.time()
 
 print('Running time: %s Seconds'%(end-start))
-#
