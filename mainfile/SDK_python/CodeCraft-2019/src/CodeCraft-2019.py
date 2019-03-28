@@ -61,7 +61,7 @@ def main():
         same_speed_car_list = diff_speed_car_dict[speed]
 
         # 针对相同速度的车生成答案列表
-        answerlist = tool.dijkstra(edges, same_speed_car_list, rcMap_test)
+        answerlist = tool.dijkstra(edges, same_speed_car_list, rcMap_test,diff_speed_list)
 
         # 增加到所有的文件列表后
         all_answer_list += answerlist
