@@ -353,7 +353,7 @@ class Tools(object):
 
 
 
-    # #计算车的实际运行时间------------------ 方案一 ------------------
+    #计算车的实际运行时间------------------ 方案一 ------------------
     # def compute_start_time_of_car(self,car,shortpathtime,cross_dict_of_shortpath):
     #     """
     #     :param 当前的车对象
@@ -365,49 +365,19 @@ class Tools(object):
     #         cross_dict_of_shortpath[car.orig_cross] = car.start_time
     #
     #     starttime = cross_dict_of_shortpath[car.orig_cross]
-    #     cross_dict_of_shortpath[car.orig_cross] += shortpathtime + 1 #全局时间推迟一辆车的运行时间
+    #     cross_dict_of_shortpath[car.orig_cross] += (shortpathtime)*2 #全局时间推迟一辆车的运行时间
     #
     #     return starttime
 
-    # 计算车的实际运行时间------------------ 方案二 ------------------
-    # def compute_start_time_of_car(self, car, shortpathtime, cross_dict_of_shortpath):
-    #     """
-    #     :param 当前的车对象
-    #     :param shortpathtime: 该车到终点的最短运行时间
-    #     :return: starttime:该车的实际出发时间
-    #     """
-    #
-    #     starttime = 1
-    #
-    #     # if car.orig_cross == '28':
-    #     #     mul = 0
-    #
-    #     if cross_dict_of_shortpath[car.orig_cross] == 0 :
-    #         #如果这个路口没有被访问过
-    #         #这个路口是第几个被访问的路口那么就把字典值设置成几。
-    #
-    #         cross_dict_of_shortpath[-1] += 1 #被访问数+1
-    #         mul = cross_dict_of_shortpath[-1] - 1
-    #         cross_dict_of_shortpath[car.orig_cross] = cross_dict_of_shortpath[-1]
-    #
-    #     elif cross_dict_of_shortpath[car.orig_cross] != 0:
-    #         #如果这个路口被访问过了，那么就
-    #         mul = cross_dict_of_shortpath[car.orig_cross] - 1
-    #
-    #     starttime = car.start_time + 14 * mul
-    #
-    #
-    #     return starttime
-
-
-    #计算车的实际运行时间------------------ 方案三 、方案四共用 start------------------
-    def compute_start_time_of_car(self, car,delay_time_dict,cross_priority_dict,car_speed_list):
+    # 计算车的实际运行时间------------------ 方案二 正式比赛最优参数：27------------------
+    def compute_start_time_of_car(self, car, shortpathtime, cross_dict_of_shortpath,car_speed_list):
         """
         :param 当前的车对象
-        :param cross_priority_dict: 路口优先级字典{key = 路口id，value = (层级数，优先级数)}
-        :param delay_time_dict 各层级延迟字典：键是什么层级，值是（延迟，有多少个优先级）{key:layer,value: (delay,priority_num)}
+        :param shortpathtime: 该车到终点的最短运行时间
         :return: starttime:该车的实际出发时间
         """
+
+        starttime = 1
 
         car_speed_dict = {}
         i = 1
@@ -415,25 +385,60 @@ class Tools(object):
             car_speed_dict[speed] = i
             i+=1
 
-        layer,priority = cross_priority_dict[car.orig_cross] #获取本路口的层级及在该层级的优先级
+        if cross_dict_of_shortpath[car.orig_cross] == 0 :
+            #如果这个路口没有被访问过
+            #这个路口是第几个被访问的路口那么就把字典值设置成几。
 
-        delay = delay_time_dict[layer][0] #获取本层级的延迟
+            cross_dict_of_shortpath[-1] += 1 #被访问数+1
+            mul = cross_dict_of_shortpath[-1] - 1
+            cross_dict_of_shortpath[car.orig_cross] = cross_dict_of_shortpath[-1]
 
-        all_delay_before = 0 #初始化这一层级之前所有的延迟
+        elif cross_dict_of_shortpath[car.orig_cross] != 0:
+            #如果这个路口被访问过了，那么就
+            mul = cross_dict_of_shortpath[car.orig_cross] - 1
 
-        #计算这一层级之前所有的延迟
-        for i in range(layer):
-            delay_by_layer,pri_num = delay_time_dict[i]
-            all_delay_before += delay_by_layer * pri_num
-            all_delay_before -= 5
-
-        #本车的实际开始时间是 + 本路口层级之前的所有延迟 + 本路口优先级之前的延迟 + 车速限制
-        starttime = all_delay_before + delay * priority + car_speed_dict[car.limit_speed]
+        starttime = 19 * mul + car_speed_dict[car.limit_speed]#加上速度限制
 
         if starttime < car.start_time:
             starttime = car.start_time
 
         return starttime
+
+
+    # #计算车的实际运行时间------------------ 方案三 、方案四共用 start------------------
+    # def compute_start_time_of_car(self, car,delay_time_dict,cross_priority_dict,car_speed_list):
+    #     """
+    #     :param 当前的车对象
+    #     :param cross_priority_dict: 路口优先级字典{key = 路口id，value = (层级数，优先级数)}
+    #     :param delay_time_dict 各层级延迟字典：键是什么层级，值是（延迟，有多少个优先级）{key:layer,value: (delay,priority_num)}
+    #     :return: starttime:该车的实际出发时间
+    #     """
+    #
+    #     car_speed_dict = {}
+    #     i = 1
+    #     for speed in sorted(car_speed_list,reverse=True):
+    #         car_speed_dict[speed] = i
+    #         i+=1
+    #
+    #     layer,priority = cross_priority_dict[car.orig_cross] #获取本路口的层级及在该层级的优先级
+    #
+    #     delay = delay_time_dict[layer][0] #获取本层级的延迟
+    #
+    #     all_delay_before = 0 #初始化这一层级之前所有的延迟
+    #
+    #     #计算这一层级之前所有的延迟
+    #     for i in range(layer):
+    #         delay_by_layer,pri_num = delay_time_dict[i]
+    #         all_delay_before += delay_by_layer * pri_num
+    #         all_delay_before -= 5
+    #
+    #     #本车的实际开始时间是 + 本路口层级之前的所有延迟 + 本路口优先级之前的延迟 + 车速限制
+    #     starttime = all_delay_before + delay * priority + car_speed_dict[car.limit_speed]
+    #
+    #     if starttime < car.start_time:
+    #         starttime = car.start_time
+    #
+    #     return starttime
 
 
     #------------------ 方案三 、方案四共用 end ------------------
@@ -493,21 +498,21 @@ class Tools(object):
         answer_list = []
 
         # ————————方案二 start——————————
-        # #初始化各路口的记录值字典
-        # cross_dict_of_shortpath = defaultdict(int)
-        #
-        # for crossid in rcmap.cross_dict.keys():
-        #     cross_dict_of_shortpath[crossid] = 0
-        #
-        # #-1key作为计数器
-        # cross_dict_of_shortpath[-1] = 0
+        #初始化各路口的记录值字典
+        cross_dict_of_shortpath = defaultdict(int)
+
+        for crossid in rcmap.cross_dict.keys():
+            cross_dict_of_shortpath[crossid] = 0
+
+        #-1key作为计数器
+        cross_dict_of_shortpath[-1] = 0
         # ————————方案二 end——————————
 
-        # ————————方案三、方案四 start——————————
-        #计算该地图的路口位置矩阵
-        cross_location_matrix = rcmap.compute_cross_location_matrix()
-        # 根据路口位置矩阵计算、每个路口的层级及优先级、并返回路口优先级字典
-        delay_time_dict, cross_priority_dict = self.compute_cross_priority(cross_location_matrix)
+        # # ————————方案三、方案四 start——————————
+        # #计算该地图的路口位置矩阵
+        # cross_location_matrix = rcmap.compute_cross_location_matrix()
+        # # 根据路口位置矩阵计算、每个路口的层级及优先级、并返回路口优先级字典
+        # delay_time_dict, cross_priority_dict = self.compute_cross_priority(cross_location_matrix)
 
         # ————————方案三、方案四 end——————————
 
@@ -548,10 +553,13 @@ class Tools(object):
                         car_id = car.car_id  # 答案对象的car_id
                         road_id_list = rcmap.transfer_cross_to_road(path_list)  # 答案对象的path_list
 
+
+                        # 方案一
+                        start_time = self.compute_start_time_of_car(car,shortpathtime,cross_dict_of_shortpath,diff_speed_list)
                         # 方案二
                         # start_time = self.compute_start_time_of_car(car,shortpathtime,cross_dict_of_shortpath)  # 答案对象的start_time
                         # 方案三、四
-                        start_time = self.compute_start_time_of_car(car,delay_time_dict,cross_priority_dict,diff_speed_list)
+                        # start_time = self.compute_start_time_of_car(car,delay_time_dict,cross_priority_dict,diff_speed_list)
                         #方案五
                         # start_time = self.compute_start_time_of_car(car, cross_priority_dict,diff_speed_list)
 
@@ -619,19 +627,22 @@ answers_list = [answer1, answer2, answer3]
 t.write_answer(answers_list)
 
 """
-# # # #
+# # #
+
 #
 # start = time.time()
 #
-# tool = Tools("../1-map-training-1/car.txt",
-#           "../1-map-training-1/road.txt",
-#           "../1-map-training-1/cross.txt",
-#           "../1-map-training-1/answer.txt")
+# tool = Tools("../1-map-exam-1/car.txt",
+#           "../1-map-exam-1/road.txt",
+#           "../1-map-exam-1/cross.txt",
+#           "../1-map-exam-1/answer.txt")
 #
 #
 # #读各种数据
 # road_list = tool.read_road()
 # cross_list = tool.read_cross()
+#
+#
 # carlist = tool.read_car()
 #
 #
@@ -644,16 +655,21 @@ t.write_answer(answers_list)
 # #新建一个地图类
 # rcMap_test = base_class.RoadCrossMap(road_list, cross_list, diff_speed_list)
 #
+# print(len(rcMap_test.cross_dict))
 # cclm = rcMap_test.compute_cross_location_matrix()
+# #
+# for i in range(len(cclm)):
+#     print(cclm[i], end='\t')
 #
-# print(cclm)
+
 # print(tool.compute_cross_priority(cclm)[0])
 # print(tool.compute_cross_priority(cclm)[1])
-# # for road in road_list:
-# #     if not road.is_dual :
-# #         print(road)
-#
+# for road in road_list:
+#     if not road.is_dual :
+#         print(road)
+
 # #获取不同速度的地图
+# # print(diff_speed_list)
 # speed_dict = rcMap_test.init_map_of_diff_speed(diff_speed_list)
 #
 # all_answer_list = []

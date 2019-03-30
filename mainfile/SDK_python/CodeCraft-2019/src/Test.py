@@ -75,7 +75,7 @@ num = int((len(cross)-1)**0.5)
 # 生成地图，左下角的路口设置为1
 # a是二维数组，(num+1) * (num+1)
 
-a = []
+cross_location_matrix = []
 
 for i in range(num+1):
     new_arr = []
@@ -84,7 +84,7 @@ for i in range(num+1):
             new_arr.append(1)
         else:
             new_arr.append(0)
-    a.append(new_arr)
+    cross_location_matrix.append(new_arr)
 
 
 class C:
@@ -130,7 +130,7 @@ for index in range(len(cross)):
 def if_a_not_full(n):
     for i in range(1, n+1):
         for j in range(1, n+1):
-            if a[i][j] == 0:
+            if cross_location_matrix[i][j] == 0:
                 return True
     return False
 
@@ -140,15 +140,15 @@ def print_a_with_road(n):
     for i in range(1, n+1):
         print("           ")
         for j in range(1, n+1):
-            print(a[i][j], end='\t')
-            if cross_obj_arr[a[i][j]].right != -1:
-                print("-", cross_obj_arr[a[i][j]].right, "-", end='\t')
+            print(cross_location_matrix[i][j], end='\t')
+            if cross_obj_arr[cross_location_matrix[i][j]].right != -1:
+                print("-", cross_obj_arr[cross_location_matrix[i][j]].right, "-", end='\t')
             elif j != n:
                 print("-0000- ", end="\t")
         print("")
         for k in range(1, n+1):
-            if cross_obj_arr[a[i][k]].down != -1:
-                print(cross_obj_arr[a[i][k]].down, end='\t')
+            if cross_obj_arr[cross_location_matrix[i][k]].down != -1:
+                print(cross_obj_arr[cross_location_matrix[i][k]].down, end='\t')
             elif i != n:
                 print("0000    ", end='\t')
 
@@ -156,20 +156,20 @@ def print_a_with_road(n):
 while if_a_not_full(num):  # 当路口未填满时
     for i in range(1, num+1):
         for j in range(1, num+1):
-            if a[i][j] != 0:  # 不为0说明该处由路口，根据这个路口找与其相连的路口
+            if cross_location_matrix[i][j] != 0:  # 不为0说明该处由路口，根据这个路口找与其相连的路口
                 # print(cross_obj_arr[a[i][j]].up)
                 # print(cross_obj_arr[a[i][j]].right)
                 # print(cross_obj_arr[a[i][j]].down)
                 # print(cross_obj_arr[a[i][j]].left)
 
                 for k in range(1, len(cross)):
-                    if cross_obj_arr[a[i][j]].is_up(cross_obj_arr[k]):
-                        a[i-1][j] = k
-                    elif cross_obj_arr[a[i][j]].is_right(cross_obj_arr[k]):
-                        a[i][j+1] = k
-                    elif cross_obj_arr[a[i][j]].is_down(cross_obj_arr[k]):
-                        a[i+1][j] = k
-                    elif cross_obj_arr[a[i][j]].is_left(cross_obj_arr[k]):
-                        a[i][j-1] = k
+                    if cross_obj_arr[cross_location_matrix[i][j]].is_up(cross_obj_arr[k]):
+                        cross_location_matrix[i-1][j] = k
+                    elif cross_obj_arr[cross_location_matrix[i][j]].is_right(cross_obj_arr[k]):
+                        cross_location_matrix[i][j+1] = k
+                    elif cross_obj_arr[cross_location_matrix[i][j]].is_down(cross_obj_arr[k]):
+                        cross_location_matrix[i+1][j] = k
+                    elif cross_obj_arr[cross_location_matrix[i][j]].is_left(cross_obj_arr[k]):
+                        cross_location_matrix[i][j-1] = k
 
 print_a_with_road(num)

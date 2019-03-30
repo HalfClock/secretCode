@@ -105,6 +105,7 @@ include cross:
         for road_item in road_list:
             if str(road_item) != str(-1):
                 find_road_result.append(road_item)
+
         return find_road_result
 
     """
@@ -140,11 +141,18 @@ include cross:
         """
         beside_cross_result = []
         # 找到与这个路口相关联的road
-        related_roads = self.find_road_of_cross(cross_id)
+        related_roads = self.cross_dict[cross_id].road_list
+
         for road_item in related_roads:
-            beside_cross_result.extend(self.find_cross_of_road(road_item))
-        beside_cross_result = list(set(beside_cross_result))
-        beside_cross_result.remove(cross_id)
+            if road_item == str(-1):
+                beside_cross_result.append('-1')
+            else:
+                fromcross,tocross = self.road_dict[road_item].orig_id,self.road_dict[road_item].dest_id
+                if fromcross == cross_id:
+                    beside_cross_result.append(tocross)
+                else:
+                    beside_cross_result.append(fromcross)
+
         return beside_cross_result
 
     def beside_road_of_road(self, road_id: str) -> list:
@@ -217,10 +225,101 @@ include cross:
         """
         :return: 二维列表，记录着所有的路口的邻接信息
         """
-        lens = int(math.sqrt(len(self.cross_dict)))
 
-        cross_location_matrix = [[str(i + j * lens) for i in range(1, lens+1)] for j in range(lens)]
-        return cross_location_matrix
+        #获取路口总数量
+        lens = math.ceil(len(self.cross_dict)**0.5)
+
+        #初始化一个两倍容量的矩阵
+        location_matrix = [[0 for j in range(2*lens)]for i in range(2*lens)]
+
+        inital_i = lens - 1
+        inital_j = lens - 1
+        initalcrossid = list(self.cross_dict.keys())[0]
+
+        location_matrix[inital_i][inital_j] = initalcrossid
+
+        #如果已经读过这个路口，那么放进sets里
+        is_read_sets = set()
+        is_read_sets.add(list(self.cross_dict.keys())[0])
+
+        cross = self.cross_dict[location_matrix[inital_i][inital_j]]
+
+        adj_cross_list = self.beside_cross_of_cross(cross.cross_id)
+
+        #指定最初的方向是上右下左
+        if adj_cross_list[0] != str(-1):#上
+            location_matrix[inital_i - 1][inital_j] = adj_cross_list[0]
+            is_read_sets.add(adj_cross_list[0])
+            self.digui_double_list(inital_i,inital_j,inital_i - 1, inital_j,initalcrossid,adj_cross_list[0], location_matrix, is_read_sets,2*lens)
+
+        if adj_cross_list[1] != str(-1):#右
+            location_matrix[inital_i][inital_j + 1] = adj_cross_list[1]
+            is_read_sets.add(adj_cross_list[1])
+            self.digui_double_list(inital_i,inital_j,inital_i, inital_j + 1,initalcrossid,adj_cross_list[1], location_matrix, is_read_sets,2*lens)
+
+        if adj_cross_list[2] != str(-1):#下
+            location_matrix[inital_i + 1][inital_j] = adj_cross_list[2]
+            is_read_sets.add(adj_cross_list[2])
+            self.digui_double_list(inital_i,inital_j,inital_i + 1, inital_j,initalcrossid,adj_cross_list[2], location_matrix, is_read_sets,2*lens)
+
+        if adj_cross_list[3] != str(-1):#左
+            location_matrix[inital_i][inital_j -1] = adj_cross_list[3]
+            is_read_sets.add(adj_cross_list[3])
+            self.digui_double_list(inital_i,inital_j,inital_i, inital_j -1,initalcrossid,adj_cross_list[3], location_matrix, is_read_sets,2*lens)
+
+        print(is_read_sets)
+        # self.digui_double_list(inital_i,inital_j,cross,location_matrix,is_read_sets)
+
+        # testlist = self.beside_cross_of_cross(list(self.cross_dict.keys())[0])
+
+        return location_matrix
+
+
+    def digui_double_list(self,i1,j1,i2,j2,fromcross,cross_id,location_matrix,is_read_sets,lens):
+        """
+
+        :param i: 当前cross的
+        :param j: 当前cross的j
+        :param fromcross: 从哪个fromcross来
+        :param cross_id: 当前crossid
+        :param location_matrix:
+        :param is_read_sets:
+        :return:
+        """
+
+        adj_cross_list = self.beside_cross_of_cross(cross_id)
+
+        index = adj_cross_list.index(fromcross)
+        adj_cross_list1 = []
+        adj_cross_list1.extend(adj_cross_list[index:])
+        adj_cross_list1.extend(adj_cross_list[:index])
+
+        index_list = self.find_shunshizhen(i1,j1,i2,j2)
+        print(i1,j1)
+        print(i2,j2)
+        print(adj_cross_list1)
+        print(index_list)
+        for i in range(1,len(adj_cross_list1)):
+            if adj_cross_list1[i] != str(-1) and adj_cross_list1[i] not in is_read_sets:
+                cross_i,cross_j = index_list[i-1]
+                if cross_i >= 0 and cross_j >=0 and cross_i < lens and cross_j < lens:
+                    location_matrix[cross_i][cross_j] = adj_cross_list1[i]
+                    is_read_sets.add(adj_cross_list1[i])
+                    self.digui_double_list(i2,j2,cross_i,cross_j,cross_id,adj_cross_list1[i],location_matrix,is_read_sets,lens)
+
+
+    def find_shunshizhen(self,i1,j1,i2,j2):
+        if (i1 + 1 == i2):
+            return [(i1, j2 + 1), (i2 + 1, j2), (2, j2 - 1)]
+        elif (i1 - 1 == i2):
+            return [(i2, j2 - 1), (i2 - 1, j2), (i2, j2 + 1)]
+        elif (j1 + 1 == j2):
+            return [(i2 - 1, j2), (i2, j2 + 1), (i2 + 1, j2)]
+        elif (j1 - 1 == j2):
+            return [(i2 + 1, j2), (i2, j2 - 1), (i2 - 1, j2)]
+        else:
+            return -1
+
 
 
     #输入两个路口的id，若两个路口相邻则返回连接两个路口的道路id，若无则返回-1
@@ -280,6 +379,10 @@ include cross:
         road_dict = self.road_dict  # 拿到路字典
         speed_dict = {}  # 初始化结果字典
 
+        # 阈值速度
+        car_speed_list.sort()
+        Thresholdspeed = car_speed_list[int(len(car_speed_list)//2)]
+
         for car_speed in car_speed_list:  # 对于每一种车速进行遍历
 
             for road in road_dict:  # 对于每一种测速遍历每一条路
@@ -289,19 +392,27 @@ include cross:
                 if car_speed not in speed_dict:  # 差错控制
                     speed_dict[car_speed] = []
 
+                cost = road_dict[road].road_len // final_speed
+
+                if car_speed > Thresholdspeed:
+                    if road_dict[road].lane == 1:
+                        cost += 4
+                    if road_dict[road].lane == 2:
+                        cost += 4
+
                 if road_dict[road].is_dual:  # 如果路是双向
 
                     speed_dict[car_speed].append((road_dict[road].orig_id,
                                                   road_dict[road].dest_id,
-                                                  road_dict[road].road_len // final_speed))
+                                                  cost))
                     speed_dict[car_speed].append((road_dict[road].dest_id,
                                                   road_dict[road].orig_id,
-                                                  road_dict[road].road_len // final_speed))
+                                                  cost))
                 else:  # 如果路是单向
 
                     speed_dict[car_speed].append((road_dict[road].orig_id,
                                                   road_dict[road].dest_id,
-                                                  road_dict[road].road_len // final_speed))
+                                                    cost))
 
         return speed_dict
 
@@ -318,6 +429,7 @@ class Answer(object):
 
     def __repr__(self) -> str:
         return str(self)
+
 
 # ---------------------------------------- test ----------------------------------------
 
